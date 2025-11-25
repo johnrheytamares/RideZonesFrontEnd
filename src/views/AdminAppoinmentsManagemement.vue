@@ -237,7 +237,7 @@ const appointmentDateTime = computed({
 const fetchAppointments = async () => {
   loading.value = true
   try {
-    const res = await fetch('http://localhost:8000/listappointment')
+    const res = await fetch('https://backendlavalust4.onrender.com/listappointment')
     const data = await res.json()
     if (data.status === 'success') appointments.value = data.appointments || []
   } catch (e) { console.error(e) }
@@ -263,7 +263,7 @@ const updateAppointment = async () => {
       notes: selectedAppointment.value.notes || null,
       appointment_at: selectedAppointment.value.appointment_at
     }
-    const res = await fetch(`http://localhost:8000/updateappointment/${selectedAppointment.value.id}`, {
+    const res = await fetch(`https://backendlavalust4.onrender.com/updateappointment/${selectedAppointment.value.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

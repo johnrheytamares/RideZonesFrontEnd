@@ -129,7 +129,7 @@ const isBookButtonDisabled = computed(() => {
 // Fetch booked dates (fully booked dates only)
 async function fetchBookedDates() {
   try {
-    const res = await fetch(`http://localhost:8000/get-booked-dates/${props.carId}?t=${Date.now()}`)
+    const res = await fetch(`https://backendlavalust4.onrender.com/get-booked-dates/${props.carId}?t=${Date.now()}`)
     const data = await res.json()
     if (data.status === 'success') {
       bookedDates.value = data.booked_dates || []
@@ -191,7 +191,7 @@ async function createAppointment() {
   }
 
   try {
-    const res = await fetch('http://localhost:8000/createappointment', {
+    const res = await fetch('https://backendlavalust4.onrender.com/createappointment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

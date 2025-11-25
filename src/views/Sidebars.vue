@@ -146,7 +146,7 @@ export default {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-        const res = await fetch("http://localhost:8000/listappointments", {  // MAY "s" NA!
+        const res = await fetch("https://backendlavalust4.onrender.com/listappointments", {  // MAY "s" NA!
           headers: {
             'Content-Type': 'application/json',
             'X-User': JSON.stringify(user)  // SECURED NA TALAGA!

@@ -29,7 +29,7 @@ export default {
   methods: {
     async bookAppointment() {
       try {
-        const res = await fetch('http://localhost/createappointment', {
+        const res = await fetch('https://backendlavalust4.onrender.com/createappointment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

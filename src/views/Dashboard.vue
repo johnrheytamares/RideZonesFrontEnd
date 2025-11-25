@@ -117,8 +117,8 @@ const fetchData = async () => {
     const headers = { 'Content-Type': 'application/json', 'X-User': JSON.stringify(user) }
 
     const [stockRes, appRes] = await Promise.all([
-      fetch('http://localhost:8000/cardistribution', { headers }),
-      fetch('http://localhost:8000/dataappointments', { headers })
+      fetch('https://backendlavalust4.onrender.com/cardistribution', { headers }),
+      fetch('https://backendlavalust4.onrender.com/dataappointments', { headers })
     ])
 
     const stockJson = await stockRes.json()

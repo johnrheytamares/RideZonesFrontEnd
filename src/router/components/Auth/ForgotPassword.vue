@@ -105,7 +105,7 @@ const sendResetLink = async () => {
   error.value = ''
 
   try {
-    const res = await fetch('http://localhost:8000/forgot-password', {
+    const res = await fetch('https://backendlavalust4.onrender.com/forgot-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email.value })

@@ -294,7 +294,7 @@ const form = ref({
   warranty_period: 36, warranty_start_date: '', warranty_end_date: '', service_history: ''
 })
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = 'https://backendlavalust4.onrender.com'
 
 const availableCount = computed(() => cars.value.filter(c => c.status === 'available').length)
 const reservedCount = computed(() => cars.value.filter(c => c.status === 'reserved').length)

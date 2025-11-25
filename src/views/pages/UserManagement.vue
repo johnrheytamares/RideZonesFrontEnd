@@ -233,7 +233,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 
-const API_BASE = 'http://localhost:8000/api/user'
+const API_BASE = 'https://backendlavalust4.onrender.com/api/user'
 const loading = ref(false)
 const users = ref([])
 const isEditing = ref(false)

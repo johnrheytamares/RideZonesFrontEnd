@@ -195,7 +195,7 @@ const form = ref({
   name: '', email: '', phone: '', address: '', description: '', logo: ''
 })
 
-const API_BASE = 'http://localhost:8000'
+const API_BASE = 'https://backendlavalust4.onrender.com'
 
 const showNotification = (msg, type = 'info') => alert(`[${type.toUpperCase()}] ${msg}`)
 

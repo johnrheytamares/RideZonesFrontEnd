@@ -350,7 +350,7 @@ const openModal = (carId) => {
 // Fetch Cars
 const fetchCars = async () => {
   try {
-    const url = new URL('http://localhost:8000/searchcars')
+    const url = new URL('https://backendlavalust4.onrender.com/searchcars')
     url.searchParams.append('page', pagination.value.page)
     url.searchParams.append('limit', pagination.value.limit)
     if (search.value) url.searchParams.append('search', search.value.trim())
