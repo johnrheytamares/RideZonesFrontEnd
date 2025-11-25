@@ -295,7 +295,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { debounce } from 'lodash-es'
 import { useRouter } from 'vue-router'
-import AppointmentModal from '../../components/Appointments/AppointmentModal.vue'
+import AppointmentModal from './AppointmentModal.vue'
 import CarComparison from './CarComparison.vue'
 import FooterSection from './FooterSection.vue'
 

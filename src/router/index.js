@@ -2,11 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // Import your views
 import Dashboard from '../views/Dashboard.vue'
-import Login from '../components/Auth/Login.vue'
-import Registration from '../components/Auth/Registration.vue'
-import CarsManagement from '../components/Cars/CarsManagement.vue'
+import Login from './components/Auth/Login.vue'
+import Registration from './components/Auth/Registration.vue'
+import CarsManagement from './components/Cars/CarsManagement.vue'
 import CarsPage from '../views/pages/CarsPage.vue'
-import AppointmentCard from '../components/Appointments/AppointmentCard.vue'
+import AppointmentCard from './components/Appointments/AppointmentCard.vue'
 import AdminAppoinmentsManagemement from '../views/AdminAppoinmentsManagemement.vue'
 import UserAppointmentPage from '../views/UserAppointments.vue'
 import CarInventory from '../views/pages/CarInventory.vue'
@@ -17,8 +17,8 @@ import HomeView from '../views/HomeView.vue'
 import ContactPage from '../views/ContactPage.vue'
 import GoogleForm from  '../views/GoogleForm.vue'
 import About from '../views/pages/About.vue'
-import ForgotPassword from '../components/Auth/ForgotPassword.vue'
-import ResetPassword from '../components/Auth/ResetPassword.vue'
+import ForgotPassword from './components/Auth/ForgotPassword.vue'
+import ResetPassword from './components/Auth/ResetPassword.vue'
 
 const routes = [
   { path: '/dashboard', name: 'dashboards', component: Dashboard },

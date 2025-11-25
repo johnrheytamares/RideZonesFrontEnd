@@ -32,7 +32,7 @@ frontend/
 |   |   |     |    ├──FooterPage.vue
 |   |   |     |    └──HeaderPage.vue
 |   |   |     ├──Header.vue
-|   |   |     └──Slidebars.vue
+|   |   |     └──Sidebars.vue
 │   │   ├── notification/
 │   │   |   └──Notification.vue
 │   │   ├── ui/
