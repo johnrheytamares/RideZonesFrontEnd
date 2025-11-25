@@ -185,7 +185,7 @@ const resetPassword = async () => {
   error.value = ''
 
   try {
-    const res = await fetch('https://backendlavalust4.onrender.com/reset-password', {
+    const res = await fetch('https://ridezonesbackend.onrender.com/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

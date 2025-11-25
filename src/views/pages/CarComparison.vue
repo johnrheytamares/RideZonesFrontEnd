@@ -162,7 +162,7 @@ const formatDate = (dateStr) => {
 
 const getImage = (path) => {
   if (!path) return '/default-car.jpg'
-  return path.startsWith('http') ? path : `https://backendlavalust4.onrender.com${path.startsWith('/') ? '' : '/'}${path}`
+  return path.startsWith('http') ? path : `https://ridezonesbackend.onrender.com${path.startsWith('/') ? '' : '/'}${path}`
 }
 
 const updateCompare = () => {
@@ -179,7 +179,7 @@ const updateCompare = () => {
 
 const fetchCars = async (ids) => {
   try {
-    const res = await fetch('https://backendlavalust4.onrender.com/api/compare/cars', {
+    const res = await fetch('https://ridezonesbackend.onrender.com/api/compare/cars', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids })

@@ -172,7 +172,7 @@
                   </td>
                   <td class="py-5">
                     <img v-if="car.main_image"
-                         :src="car.main_image.startsWith('http') ? car.main_image : 'https://backendlavalust4.onrender.com' + car.main_image"
+                         :src="car.main_image.startsWith('http') ? car.main_image : 'https://ridezonesbackend.onrender.com' + car.main_image"
                          class="w-20 h-14 object-cover rounded-lg shadow-lg border border-white/10"
                          alt="Car" />
                     <div v-else class="w-20 h-14 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center">

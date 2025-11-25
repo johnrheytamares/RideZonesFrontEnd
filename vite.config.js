@@ -7,13 +7,13 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://backendlavalust4.onrender.com',
+        target: 'https://ridezonesbackend.onrender.com',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/uploads': {
-        target: 'https://backendlavalust4.onrender.com',
+        target: 'https://ridezonesbackend.onrender.com',
         changeOrigin: true,
         secure: false,
         // No rewrite needed — keep /uploads/cars/...
