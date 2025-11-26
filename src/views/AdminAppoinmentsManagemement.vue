@@ -237,7 +237,7 @@ const appointmentDateTime = computed({
 const fetchAppointments = async () => {
   loading.value = true
   try {
-    const res = await fetch('https://ridezonesbackend.onrender.com/listappointment')
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment')
     const data = await res.json()
     if (data.status === 'success') appointments.value = data.appointments || []
   } catch (e) { console.error(e) }
@@ -263,7 +263,7 @@ const updateAppointment = async () => {
       notes: selectedAppointment.value.notes || null,
       appointment_at: selectedAppointment.value.appointment_at
     }
-    const res = await fetch(`https://ridezonesbackend.onrender.com/updateappointment/${selectedAppointment.value.id}`, {
+    const res = await fetch(`https://ridezonesbackends-dzei.onrender.com/updateappointment/${selectedAppointment.value.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

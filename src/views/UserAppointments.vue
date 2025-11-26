@@ -29,7 +29,7 @@ export default {
   methods: {
     async bookAppointment() {
       try {
-        const res = await fetch('https://ridezonesbackend.onrender.com/createappointment', {
+        const res = await fetch('https://ridezonesbackends-dzei.onrender.com/createappointment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

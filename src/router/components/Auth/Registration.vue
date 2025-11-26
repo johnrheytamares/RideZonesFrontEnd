@@ -278,7 +278,7 @@ export default {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        const response = await fetch('https://ridezonesbackend.onrender.com/api/user/create', {
+        const response = await fetch('https://ridezonesbackends-dzei.onrender.com/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

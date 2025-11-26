@@ -195,7 +195,7 @@ const form = ref({
   name: '', email: '', phone: '', address: '', description: '', logo: ''
 })
 
-const API_BASE = 'https://ridezonesbackend.onrender.com'
+const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
 
 const showNotification = (msg, type = 'info') => alert(`[${type.toUpperCase()}] ${msg}`)
 
@@ -209,7 +209,7 @@ const handleLogoUpload = async (e) => {
   formData.append('logo_file', file)
   loading.value = true
   try {
-    const res = await fetch(`${API_BASE}/dealers/upload-logo`, { method: 'POST', body: formData })
+    const res = await fetch(`${API_BASE}/upload-dealer-logo`, { method: 'POST', body: formData })
     const data = await res.json()
     if (data.status === 'success') {
       form.value.logo = data.url
@@ -223,7 +223,7 @@ const handleLogoUpload = async (e) => {
 const fetchDealers = async () => {
   loading.value = true
   try {
-    const res = await fetch(`${API_BASE}/dealers`)
+    const res = await fetch(`${API_BASE}/listdealers`)
     const data = await res.json()
     if (data.status === 'success') dealers.value = data.dealers
   } catch { } finally { loading.value = false }
@@ -233,7 +233,7 @@ const createDealer = async () => {
   if (!form.value.name.trim()) return showNotification('Name required', 'error')
   loading.value = true
   try {
-    const res = await fetch(`${API_BASE}/dealers`, {
+    const res = await fetch(`${API_BASE}/createdealer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value)
@@ -250,7 +250,7 @@ const createDealer = async () => {
 const updateDealer = async () => {
   loading.value = true
   try {
-    const res = await fetch(`${API_BASE}/dealers/${editId.value}`, {
+    const res = await fetch(`${API_BASE}/updatedealer/${editId.value}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value)
@@ -268,7 +268,7 @@ const deleteDealer = async (id) => {
   if (!confirm('Delete this dealer permanently?')) return
   loading.value = true
   try {
-    await fetch(`${API_BASE}/dealers/${id}`, { method: 'DELETE' })
+    await fetch(`${API_BASE}/deletedealer/${id}`, { method: 'DELETE' })
     await fetchDealers()
     showNotification('Dealer deleted', 'success')
   } catch { } finally { loading.value = false }

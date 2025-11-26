@@ -213,7 +213,7 @@ export default {
     async processGoogleLogin(token) {
       this.isLoading = true
       try {
-        const res = await fetch('https://ridezonesbackend.onrender.com/auth/google', {
+        const res = await fetch('https://ridezonesbackends-dzei.onrender.com/auth/google', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
@@ -248,7 +248,7 @@ export default {
       this.successMessage = ''
 
       try {
-        const response = await fetch('https://ridezonesbackend.onrender.com/login', {
+        const response = await fetch('https://ridezonesbackends-dzei.onrender.com/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({ email: this.email, password: this.password })

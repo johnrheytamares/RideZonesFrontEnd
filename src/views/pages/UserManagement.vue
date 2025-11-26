@@ -233,7 +233,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 
-const API_BASE = 'https://ridezonesbackend.onrender.com/api/user'
+const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
 const loading = ref(false)
 const users = ref([])
 const isEditing = ref(false)
@@ -345,7 +345,7 @@ const cancelEdit = () => {
 const fetchUsers = async () => {
   loading.value = true
   try {
-    const res = await fetch(`${API_BASE}/list`, { headers: getHeaders() })
+    const res = await fetch(`${API_BASE}/listusers`, { headers: getHeaders() })
     const data = await res.json()
     users.value = Array.isArray(data) ? data : data.users || []
     applyFilters()

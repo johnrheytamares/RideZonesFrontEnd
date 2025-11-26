@@ -146,7 +146,7 @@ export default {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}')
 
-        const res = await fetch("https://ridezonesbackend.onrender.com/listappointments", {  // MAY "s" NA!
+        const res = await fetch("https://ridezonesbackends-dzei.onrender.com/listappointments", {  // MAY "s" NA!
           headers: {
             'Content-Type': 'application/json',
             'X-User': JSON.stringify(user)  // SECURED NA TALAGA!

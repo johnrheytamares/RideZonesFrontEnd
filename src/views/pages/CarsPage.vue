@@ -350,7 +350,7 @@ const openModal = (carId) => {
 // Fetch Cars
 const fetchCars = async () => {
   try {
-    const url = new URL('https://ridezonesbackend.onrender.com/searchcars')
+    const url = new URL('hhttps://ridezonesbackends-dzei.onrender.com/searchcars')
     url.searchParams.append('page', pagination.value.page)
     url.searchParams.append('limit', pagination.value.limit)
     if (search.value) url.searchParams.append('search', search.value.trim())

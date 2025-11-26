@@ -230,7 +230,7 @@ const fetchCars = async () => {
       return
     }
 
-    const res = await fetch('http://localhost:8000/listcars', {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listcars', {
       headers: { 'X-User': JSON.stringify(user) }
     })
     const data = await res.json()
