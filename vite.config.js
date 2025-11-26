@@ -3,10 +3,12 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
+
+  // DEV: gumagamit ng proxy (zero CORS)
   server: {
     port: 5173,
     proxy: {
-      '/api': {
+      '^/api/.*': {
         target: 'https://ridezonesbackends-dzei.onrender.com',
         changeOrigin: true,
         secure: false,
@@ -16,8 +18,12 @@ export default defineConfig({
         target: 'https://ridezonesbackends-dzei.onrender.com',
         changeOrigin: true,
         secure: false,
-        // No rewrite needed — keep /uploads/cars/...
       },
     },
   },
+
+  // PRODUCTION: diretso na sa real backend (no localhost ever)
+  define: {
+    'import.meta.env.VITE_API_BASE': JSON.stringify('https://ridezonesbackends-dzei.onrender.com')
+  }
 })
