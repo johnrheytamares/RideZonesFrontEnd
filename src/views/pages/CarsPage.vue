@@ -189,9 +189,11 @@
 
         <!-- LEFT: IMAGE — Mas maliit pero impactful pa rin -->
         <div class="relative h-64 md:h-full min-h-64 overflow-hidden bg-gray-900">
-          <img :src="getCarImage(selectedCarDetail.main_image)" 
-               :alt="selectedCarDetail.make + ' ' + selectedCarDetail.model"
-               class="w-full h-full object-cover" />
+        <img 
+          :src="getCarImage(selectedCarDetail.main_image) || '/default-car.jpg'"
+          :alt="selectedCarDetail.make + ' ' + selectedCarDetail.model"
+          class="w-full h-full object-cover"
+          @error="($event) => $event.target.src = '/default-car.jpg'" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
           <div class="absolute bottom-5 left-5 text-white">
             <h1 class="text-3xl md:text-4xl font-bold drop-shadow-lg">{{ selectedCarDetail.make }} {{ selectedCarDetail.model }}</h1>
@@ -325,8 +327,15 @@ const compareIds = ref([])
 // Image Helper
 const getCarImage = (path) => {
   if (!path) return '/default-car.jpg'
-  if (path.startsWith('http') || path.startsWith('data:')) return path
-  return path.startsWith('/') ? path : `/${path.trim()}`
+  
+  // Base64 (bagong uploads)
+  if (path.startsWith('data:image')) return path
+  
+  // Cloudinary or external (future)
+  if (path.startsWith('http')) return path
+  
+  // Old uploads folder (hindi na gagana sa production)
+  return '/default-car.jpg'
 }
 
 // Format Date

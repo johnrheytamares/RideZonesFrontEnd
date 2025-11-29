@@ -242,8 +242,9 @@
                   </td>
                   <td class="py-6">
                     <img v-if="car.main_image"
-                         :src="getCarImage(car.main_image)"
-                         class="w-24 h-16 object-cover rounded-xl border border-white/10 shadow-lg" />
+                        :src="getCarImage(car.main_image)"
+                        class="w-24 h-16 object-cover rounded-xl border border-white/10 shadow-lg"
+                        @error="($event) => $event.target.src = '/default-car.jpg'" />
                     <div v-else class="w-24 h-16 bg-white/5 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center">
                       <i class="fas fa-image text-gray-600"></i>
                     </div>
@@ -300,8 +301,22 @@ const availableCount = computed(() => cars.value.filter(c => c.status === 'avail
 const reservedCount = computed(() => cars.value.filter(c => c.status === 'reserved').length)
 
 const getCarImage = (path) => {
+  // Kung wala talagang image
   if (!path) return '/default-car.jpg'
-  return path.startsWith('http') || path.startsWith('data:') ? path : `${API_BASE}${path.startsWith('/') ? '' : '/'}${path}`
+
+  // KUNG BASE64 NA (nagsisimula sa "data:image")
+  if (typeof path === 'string' && path.startsWith('data:image')) {
+    return path
+  }
+
+  // KUNG LUMA PA RIN NA MAY http o https (kung may old images pa)
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+
+  // KUNG LUMA NA PATH NA "/uploads/cars/xxx.jpg" (hindi na gagana sa Vercel)
+  // → Pwede mo na i-ignore or maglagay ng fallback
+  return '/default-car.jpg' // or placeholder mo
 }
 
 const calculateWarrantyEnd = () => {
@@ -323,24 +338,69 @@ const showToast = (message, type = 'success') => {
 }
 
 const handleImageUpload = async (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-  if (!['image/jpeg','image/jpg','image/png'].includes(file.type)) return showToast('JPG/PNG only!', 'error')
-  if (file.size > 2*1024*1024) return showToast('Max 2MB!', 'error')
+  const file = e.target.files[0];
+  if (!file) {
+    console.warn('No file selected for upload.');
+    return;
+  }
 
-  const formData = new FormData()
-  formData.append('main_image_file', file)
-  loading.value = true
+  // Validate file type
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+  if (!allowedTypes.includes(file.type)) {
+    console.warn(`Invalid file type: ${file.type}`, file.name);
+    showToast('JPG/PNG only!', 'error');
+    return;
+  }
+
+  // Validate file size (2MB max)
+  const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+  if (file.size > maxSize) {
+    console.warn(`File too large: ${file.size} bytes (max: ${maxSize})`, file.name);
+    showToast('Max 2MB!', 'error');
+    return;
+  }
+
+  console.log(`Uploading image: ${file.name} (${file.type}, ${Math.round(file.size / 1024)} KB)`);
+
+  const formData = new FormData();
+  formData.append('main_image_file', file);
+
+  loading.value = true;
   try {
-    const res = await fetch(`${API_BASE}/upload-car-image`, { method: 'POST', body: formData })
-    const data = await res.json()
-    if (data.status === 'success') {
-      form.value.main_image = data.url
-      previewImage.value = getCarImage(data.url)
-      showToast('Image uploaded!')
+    const response = await fetch(`${API_BASE}/upload-car-image`, {
+      method: 'POST',
+      body: formData,
+      // ⚠️ Do NOT set Content-Type! FormData sets it automatically with boundary.
+    });
+
+    // Check if response is OK (status 200-299)
+    if (!response.ok) {
+      const errorMessage = `HTTP error! status: ${response.status}`;
+      console.error('Upload failed:', errorMessage);
+      throw new Error(errorMessage);
     }
-  } catch { showToast('Upload failed', 'error') } finally { loading.value = false }
-}
+
+    const data = await response.json();
+
+    // Log full response for debugging
+    console.log('Upload response:', data);
+
+    if (data.status === 'success' && data.url) {
+      form.value.main_image = data.url;                    // base64 string
+      previewImage.value = data.url;                       // ← DIRECT base64, hindi na dadaan sa getCarImage
+      showToast('Image uploaded perfectly!');
+    } else {
+      console.error('Unexpected response format or missing URL:', data);
+      showToast('Upload failed: Invalid response', 'error');
+    }
+  } catch (error) {
+    console.error('Upload error caught:', error);
+    showToast('Upload failed', 'error');
+  } finally {
+    loading.value = false;
+    console.log('Upload process finished.');
+  }
+};
 
 const fetchCars = async () => {
   loading.value = true

@@ -23,7 +23,11 @@
           <!-- Car 1 -->
           <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden transform hover:scale-[1.02] transition">
             <div class="relative h-64 bg-gray-900">
-              <img :src="getImage(car1.main_image)" class="w-full h-full object-cover" alt="Car 1">
+              <img 
+              :src="getImage(car1.main_image)" 
+              class="w-full h-full object-cover" 
+              alt="Car 1"
+              @error="e => e.target.src = '/default-car.jpg'" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
               <span class="absolute bottom-4 left-4 text-white text-3xl font-black drop-shadow-lg">
                 {{ car1.make }} {{ car1.model }}
@@ -41,8 +45,12 @@
           <!-- Car 2 -->
           <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden transform hover:scale-[1.02] transition">
             <div class="relative h-64 bg-gray-900">
-              <img :src="getImage(car2.main_image)" class="w-full h-full object-cover" alt="Car 2">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              <img 
+                :src="getImage(car2.main_image)" 
+                class="w-full h-full object-cover" 
+                alt="Car 2"
+                @error="e => e.target.src = '/default-car.jpg'" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
               <span class="absolute bottom-4 left-4 text-white text-3xl font-black drop-shadow-lg">
                 {{ car2.make }} {{ car2.model }}
               </span>
@@ -162,7 +170,15 @@ const formatDate = (dateStr) => {
 
 const getImage = (path) => {
   if (!path) return '/default-car.jpg'
-  return path.startsWith('http') ? path : `https://ridezonesbackend.onrender.com${path.startsWith('/') ? '' : '/'}${path}`
+  
+  // Base64 support (kasi gamit mo na base64 sa admin)
+  if (path.startsWith('data:image')) return path
+  
+  // External / Cloudinary (future)
+  if (path.startsWith('http')) return path
+  
+  // Old path — hindi na gagana sa production
+  return '/default-car.jpg'
 }
 
 const updateCompare = () => {
@@ -179,8 +195,7 @@ const updateCompare = () => {
 
 const fetchCars = async (ids) => {
   try {
-    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/api/compare/cars', {
-      method: 'POST',
+      const res = await fetch('https://ridezonesbackends-dzei.onrender.com/api/compare/cars', {      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids })
     })
