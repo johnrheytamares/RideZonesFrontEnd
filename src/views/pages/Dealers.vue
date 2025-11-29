@@ -87,8 +87,11 @@
                   <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-3"></i>
                   <p class="text-sm text-gray-400">Click to upload logo (Max 3MB)</p>
                 </div>
-                <img v-else :src="previewLogo" class="max-h-full rounded-lg" />
-              </div>
+                <img v-else 
+                    :src="previewLogo" 
+                    @error="e => e.target.src = '/default-dealer.jpg'"
+                    class="max-h-full max-w-full object-contain rounded-lg" />
+                  </div>
               <p class="text-xs text-gray-500 mt-2">{{ form.logo ? 'Logo ready' : 'No logo selected' }}</p>
             </div>
 
@@ -150,9 +153,12 @@
                   <td class="py-5 text-sm font-mono">#{{ dealer.id }}</td>
                   <td class="py-5">
                     <img v-if="dealer.logo"
-                         :src="dealer.logo.startsWith('http') ? dealer.logo : 'http://localhost:8000' + dealer.logo"
-                         class="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
-                    <div v-else class="w-12 h-12 bg-white/5 rounded-full border-2 border-dashed border-white/20"></div>
+                        :src="dealer.logo"
+                        @error="e => e.target.src = '/default-dealer.jpg'"
+                        class="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
+                    <div v-else class="w-12 h-12 bg-white/5 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center">
+                      <i class="fas fa-store text-gray-500 text-xs"></i>
+                    </div>
                   </td>
                   <td class="py-5 font-medium">{{ dealer.name }}</td>
                   <td class="py-5 text-sm">{{ dealer.email || '—' }}</td>
@@ -211,11 +217,13 @@ const handleLogoUpload = async (e) => {
   try {
     const res = await fetch(`${API_BASE}/upload-dealer-logo`, { method: 'POST', body: formData })
     const data = await res.json()
-    if (data.status === 'success') {
-      form.value.logo = data.url
-      previewLogo.value = `${API_BASE}${data.url}`
-      showNotification('Logo uploaded!', 'success')
-    }
+      if (data.status === 'success') {
+        form.value.logo = data.url        // ← base64 na ‘to
+        previewLogo.value = data.url      // ← direct base64, hindi na need ng API_BASE
+        showNotification('Logo uploaded!', 'success')
+      } else {
+        showNotification('Upload failed', 'error')
+      }
   } catch { showNotification('Upload failed', 'error') }
   finally { loading.value = false }
 }
@@ -278,7 +286,7 @@ const editDealer = (dealer) => {
   isEditing.value = true
   editId.value = dealer.id
   form.value = { ...dealer }
-  previewLogo.value = dealer.logo ? `${API_BASE}${dealer.logo}` : ''
+  previewLogo.value = dealer.logo || ''
   document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })
 }
 
