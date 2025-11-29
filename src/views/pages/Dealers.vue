@@ -75,26 +75,6 @@
                         class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition resize-none"></textarea>
             </div>
 
-            <!-- Logo Upload -->
-            <div class="md:col-span-2">
-              <label class="text-xs text-gray-400 mb-2 block">Dealer Logo</label>
-              <input ref="logoInput" type="file" accept="image/*" @change="handleLogoUpload" class="hidden" />
-              <div @click="$refs.logoInput.click()" 
-                   class="border-2 border-dashed border-white/20 rounded-xl h-40 flex items-center justify-center cursor-pointer hover:border-red-500/50 transition
-                          bg-white/5 hover:bg-white/10"
-                   :class="{ 'border-red-500/50': previewLogo }">
-                <div v-if="!previewLogo" class="text-center">
-                  <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-3"></i>
-                  <p class="text-sm text-gray-400">Click to upload logo (Max 3MB)</p>
-                </div>
-                <img v-else 
-                    :src="previewLogo" 
-                    @error="e => e.target.src = '/default-dealer.jpg'"
-                    class="max-h-full max-w-full object-contain rounded-lg" />
-                  </div>
-              <p class="text-xs text-gray-500 mt-2">{{ form.logo ? 'Logo ready' : 'No logo selected' }}</p>
-            </div>
-
             <!-- Actions -->
             <div class="md:col-span-2 flex gap-4 justify-end">
               <button v-if="isEditing" type="button" @click="cancelEdit"
@@ -138,7 +118,6 @@
               <thead>
                 <tr class="text-left text-xs text-gray-400 border-b border-white/10">
                   <th class="pb-4 font-medium">ID</th>
-                  <th class="pb-4 font-medium">Logo</th>
                   <th class="pb-4 font-medium">Name</th>
                   <th class="pb-4 font-medium">Email</th>
                   <th class="pb-4 font-medium">Phone</th>
@@ -150,16 +129,14 @@
                 <tr v-for="dealer in dealers" :key="dealer.id" 
                     class="hover:bg-white/5 transition"
                     :class="{ 'bg-amber-500/5 border-l-4 border-amber-500': isEditing && editId === dealer.id }">
-                  <td class="py-5 text-sm font-mono">#{{ dealer.id }}</td>
                   <td class="py-5">
-                    <img v-if="dealer.logo"
-                        :src="dealer.logo"
-                        @error="e => e.target.src = '/default-dealer.jpg'"
-                        class="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
-                    <div v-else class="w-12 h-12 bg-white/5 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center">
-                      <i class="fas fa-store text-gray-500 text-xs"></i>
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-rose-700 rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-store text-white text-sm"></i>
+                      </div>
+                      <span class="font-mono text-sm">#{{ dealer.id }}</span>
                     </div>
-                  </td>
+                  </td>       
                   <td class="py-5 font-medium">{{ dealer.name }}</td>
                   <td class="py-5 text-sm">{{ dealer.email || '—' }}</td>
                   <td class="py-5 text-sm">{{ dealer.phone || '—' }}</td>
@@ -204,29 +181,6 @@ const form = ref({
 const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
 
 const showNotification = (msg, type = 'info') => alert(`[${type.toUpperCase()}] ${msg}`)
-
-const handleLogoUpload = async (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-  if (!['image/jpeg','image/jpg','image/png','image/webp'].includes(file.type)) return showNotification('Invalid format', 'error')
-  if (file.size > 3*1024*1024) return showNotification('Logo too large', 'error')
-
-  const formData = new FormData()
-  formData.append('logo_file', file)
-  loading.value = true
-  try {
-    const res = await fetch(`${API_BASE}/upload-dealer-logo`, { method: 'POST', body: formData })
-    const data = await res.json()
-      if (data.status === 'success') {
-        form.value.logo = data.url        // ← base64 na ‘to
-        previewLogo.value = data.url      // ← direct base64, hindi na need ng API_BASE
-        showNotification('Logo uploaded!', 'success')
-      } else {
-        showNotification('Upload failed', 'error')
-      }
-  } catch { showNotification('Upload failed', 'error') }
-  finally { loading.value = false }
-}
 
 const fetchDealers = async () => {
   loading.value = true
