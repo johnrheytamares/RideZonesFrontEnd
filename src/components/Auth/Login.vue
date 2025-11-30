@@ -170,12 +170,11 @@ const handleLogin = async () => {
       // SUCCESS — I-SAVE SA LOCALSTORAGE + GLOBAL STATE
       login(user)  // ← ISANG LINYA LANG! TAPOS NA ANG BUONG AUTH SYSTEM!
 
-      // Optional success message
-      // successMessage.value = `Welcome, ${user.name}!`
+      // Optional success messag
 
       // Redirect based on role
       setTimeout(() => {
-        if (user.role === 'admin') {
+        if (['admin', 'dealer'].includes(user.role)) {
           router.push('/dashboard')
         } else {
           router.push('/login')
@@ -194,27 +193,74 @@ const handleLogin = async () => {
 }
 
 // Optional: Google Sign-In (hindi na kailangan kung ayaw mo)
+const handleGoogleResponse = async (response) => {
+  if (!response?.credential) {
+    errorMessage.value = 'Google login cancelled or failed.'
+    return
+  }
+
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential })
+    })
+
+    const data = await res.json()
+
+    if (res.ok && data.success) {
+      const user = data.user
+
+      if (!['admin', 'dealer'].includes(user.role)) {
+        errorMessage.value = 'Access denied: Only Admin and Dealers can log in.'
+        isLoading.value = false
+        return
+      }
+
+      login(user)
+      setTimeout(() => router.push('/dashboard'), 600)
+    } else {
+      errorMessage.value = data.error || 'Google login failed.'
+    }
+  } catch (err) {
+    console.error('Google login error:', err)
+    errorMessage.value = 'Server error. Try again later.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// === GOOGLE SCRIPT LOADER ===
 onMounted(() => {
-  // Load Google script
   const script = document.createElement('script')
   script.src = 'https://accounts.google.com/gsi/client'
   script.async = true
   script.defer = true
+  document.head.appendChild(script)
+
   script.onload = () => {
     window.google.accounts.id.initialize({
-      client_id: '1084979266133-d1bvpmpb5devqn5cl0pscuv9k01l9p9t.apps.googleusercontent.com',
-      callback: (response) => {
-        // Optional: bypass muna para testing
-        login({ id: 1, name: 'Admin User', email: 'admin@ridezone.com', role: 'admin' })
-        router.push('/dashboard')
-      }
+      client_id: '', // ← ILAGAY MO DITO YUNG BAGONG CLIENT ID
+      callback: handleGoogleResponse
     })
+
     window.google.accounts.id.renderButton(
       document.getElementById('g_id_signin'),
-      { theme: 'outline', size: 'large', width: 350 }
+      {
+        theme: 'outline',
+        size: 'large',
+        width: 350,
+        text: 'continue_with',
+        logo_alignment: 'left'
+      }
     )
+
+    // Optional: auto popup (one-tap)
+    window.google.accounts.id.prompt()
   }
-  document.head.appendChild(script)
 })
 </script>
 
@@ -253,7 +299,7 @@ onMounted(() => {
 .checkbox-container input{display:none}
 .checkmark{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-radius:4px;position:relative;transition:all .3s}
 .checkbox-container input:checked + .checkmark{background:#e53935;border-color:#e53935}
-.checkbox-container input:checked + .checkmark::after{content:'Checkmark';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:12px;font-weight:bold}
+.checkbox-container input:checked + .checkmark::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-size:12px;font-weight:bold}
 .forgot-password-link{color:rgb(251,253,255);font-size:.875rem;transition:color .3s}
 .forgot-password-link:hover{color:#ed7575}
 .login-button{position:relative;padding:18px 30px;background:linear-gradient(45deg,#e53935,#d32f2f);border:none;border-radius:12px;color:white;font-size:1.1rem;font-weight:600;cursor:pointer;transition:all .3s;overflow:hidden;margin-top:5px}

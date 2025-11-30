@@ -98,9 +98,9 @@
               <label class="text-xs text-gray-400 mb-2 block">Role *</label>
               <select v-model="form.role" required
                       class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
-                <option value="buyer">Customer</option>
-                <option value="dealer">Dealer</option>
-                <option value="admin">Administrator</option>
+                <option class="text-black" value="buyer">Customer</option>
+                <option class="text-black" value="dealer">Dealer</option>
+                <option class="text-black" value="admin">Administrator</option>
               </select>
             </div>
 
@@ -136,10 +136,10 @@
               </div>
               <select v-model="filterRole" @change="applyFilters"
                       class="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm">
-                <option value="">All Roles</option>
-                <option value="admin">Admin</option>
-                <option value="dealer">Dealer</option>
-                <option value="buyer">Customer</option>
+                <option class="text-black" value="">All Roles</option>
+                <option class="text-black"value="admin">Admin</option>
+                <option class="text-black" value="dealer">Dealer</option>
+                <option class="text-black" value="buyer">Customer</option>
               </select>
               <button @click="fetchUsers" class="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition">
                 <i class="fas fa-sync-alt" :class="{ 'animate-spin': loading }"></i>

@@ -74,18 +74,18 @@
             </div>
             <div>
               <label class="text-xs text-gray-400 mb-1 block">Make</label>
-              <select v-model="filters.make" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
+              <select v-model="filters.make" class="w-full bg-white/5 border  border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
                 <option value="">All Makes</option>
-                <option v-for="make in makes" :key="make" :value="make">{{ make }}</option>
+                <option class="text-black" v-for="make in makes" :key="make" :value="make">{{ make }}</option>
               </select>
             </div>
             <div>
               <label class="text-xs text-gray-400 mb-1 block">Status</label>
               <select v-model="filters.status" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
-                <option value="">All Status</option>
-                <option value="available">Available</option>
-                <option value="reserved">Reserved</option>
-                <option value="sold">Sold</option>
+                <option class="text-black" value="">All Status</option>
+                <option class="text-black" value="available">Available</option>
+                <option class="text-black" value="reserved">Reserved</option>
+                <option class="text-black" value="sold">Sold</option>
               </select>
             </div>
             <div class="lg:col-span-2 xl:col-span-1">

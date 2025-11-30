@@ -99,10 +99,10 @@
             <div>
               <label class="text-xs text-gray-400 mb-2 block">Status</label>
               <select v-model="form.status" class="input-field">
-                <option value="available">Available</option>
-                <option value="reserved">Reserved</option>
-                <option value="sold">Sold</option>
-                <option value="draft">Draft</option>
+                <option class="text-black" value="available">Available</option>
+                <option class="text-black" value="reserved">Reserved</option>
+                <option class="text-black" value="sold">Sold</option>
+                <option class="text-black" value="draft">Draft</option>
               </select>
             </div>
 

@@ -47,7 +47,7 @@ const routes = [
 
 
   // ADMIN ONLY — SAME PATHS MO PA RIN
-  { path: '/adminappointment',  name: 'adminappointment', component: AdminAppoinmentsManagemement, meta: { requiresAuth: true, roles: ['admin'] } },
+  { path: '/adminappointment',  name: 'adminappointment', component: AdminAppoinmentsManagemement, meta: { requiresAuth: true, roles: ['admin', 'dealer'] } },
   { path: '/user-management',   name: 'user-management', component: UserManagement,        meta: { requiresAuth: true, roles: ['admin'] } },
 ]
 

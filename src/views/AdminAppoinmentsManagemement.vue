@@ -101,11 +101,11 @@
               <label class="text-xs text-gray-400 mb-2 block">Status</label>
               <select v-model="selectedAppointment.status" :disabled="!selectedAppointment.id"
                       class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="rejected">Rejected</option>
+                <option class="text-black" value="pending">Pending</option>
+                <option class="text-black" value="approved">Approved</option>
+                <option class="text-black" value="completed">Completed</option>
+                <option class="text-black" value="cancelled">Cancelled</option>
+                <option class="text-black" value="rejected">Rejected</option>
               </select>
             </div>
             <div class="lg:col-span-3">

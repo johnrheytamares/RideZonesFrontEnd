@@ -21,18 +21,18 @@
         <!-- Make -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Make</label>
-          <select v-model="filters.make" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+          <select v-model="filters.make" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
             <option value="">All Makes</option>
-            <option v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
+            <option class="text-black" v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
           </select>
         </div>
 
         <!-- Year -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
-          <select v-model="filters.year" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+          <select v-model="filters.year" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
             <option value="">All Years</option>
-            <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+            <option class="text-black" v-for="year in years" :key="year" :value="year">{{ year }}</option>
           </select>
         </div>
 
@@ -40,9 +40,9 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Price Range (₱)</label>
           <div class="flex items-center gap-2 mb-2">
-            <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
             <span class="text-gray-400">—</span>
-            <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
           </div>
           <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full">
           <div class="text-xs text-gray-500 mt-1 text-right">Up to ₱{{ filters.maxPrice?.toLocaleString() || '10M' }}</div>
@@ -71,7 +71,7 @@
           <div class="grid grid-cols-2 gap-3">
             <label v-for="fuel in fuelTypes" :key="fuel" class="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" v-model="filters.fuelTypes" :value="fuel" class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
-              <span class="text-sm">{{ fuel }}</span>
+              <span class="text-sm text-black">{{ fuel }}</span>
             </label>
           </div>
         </div>
@@ -79,7 +79,7 @@
         <!-- Search -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-          <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-200 outline-none">
+          <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full text-black border px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-200 outline-none">
         </div>
 
         <!-- Buttons -->

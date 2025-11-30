@@ -62,7 +62,9 @@
         </div>
 
         <div class="rounded-2xl overflow-hidden shadow-2xl pop-card">
-          <img src="" alt="RideZone Team" class="w-full h-full object-cover">
+        <img src="/590495105_865764619156637_3119365429547371303_n.png"
+            alt="RideZone Team"
+            class="w-full h-full object-cover">
         </div>
       </div>
     </section>

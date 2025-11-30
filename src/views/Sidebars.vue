@@ -55,7 +55,7 @@
           <li
             class="nav-item"
             :class="{ active: $route.name === 'appointments' || $route.name === 'adminappointment' }"
-            @click="navigate(user?.role === 'admin' ? 'adminappointment' : 'appointments')"
+            @click="navigate('adminappointment' || 'appointments')"
           >
             <i class="fas fa-calendar-check"></i>
             <span>Appointments</span>
