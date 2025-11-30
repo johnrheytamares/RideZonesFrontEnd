@@ -172,10 +172,10 @@
                   </td>
                   <td class="py-5">
                     <img v-if="car.main_image"
-                         :src="car.main_image.startsWith('http') ? car.main_image : 'https://ridezonesbackend.onrender.com' + car.main_image"
-                         class="w-20 h-14 object-cover rounded-lg shadow-lg border border-white/10"
-                         alt="Car" />
-                    <div v-else class="w-20 h-14 bg-white/5 rounded-lg border border-white/10 flex items-center justify-center">
+                        :src="getCarImage(car.main_image)"
+                        class="w-24 h-16 object-cover rounded-xl border border-white/10 shadow-lg"
+                        @error="($event) => $event.target.src = '/default-car.jpg'" />
+                    <div v-else class="w-24 h-16 bg-white/5 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center">
                       <i class="fas fa-image text-gray-600"></i>
                     </div>
                   </td>
@@ -220,6 +220,13 @@ const filteredCars = computed(() => {
 const availableCount = computed(() => cars.value.filter(c => c.status === 'available').length)
 const reservedCount = computed(() => cars.value.filter(c => c.status === 'reserved').length)
 const soldCount = computed(() => cars.value.filter(c => c.status === 'sold').length)
+
+const getCarImage = (imageData) => {
+  if (!imageData) return '/default-car.jpg'
+  if (imageData.startsWith('data:image')) return imageData
+  if (imageData.startsWith('http')) return imageData
+  return '/default-car.jpg'
+}
 
 const fetchCars = async () => {
   loading.value = true

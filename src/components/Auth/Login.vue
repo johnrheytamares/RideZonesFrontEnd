@@ -243,7 +243,7 @@ onMounted(() => {
 
   script.onload = () => {
     window.google.accounts.id.initialize({
-      client_id: '', // ← ILAGAY MO DITO YUNG BAGONG CLIENT ID
+      client_id: '1090968034876-fh3nbirtjc4sgef6itbbn50pggo1j3l0.apps.googleusercontent.com', 
       callback: handleGoogleResponse
     })
 

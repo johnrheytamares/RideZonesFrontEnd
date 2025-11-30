@@ -83,28 +83,28 @@
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Year</td>
-                <td class="px-6 py-5 text-center">{{ car1.year }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.year }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car1.year }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car2.year }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Mileage</td>
-                <td class="px-6 py-5 text-center">{{ car1.mileage?.toLocaleString() || '—' }} km</td>
-                <td class="px-6 py-5 text-center">{{ car2.mileage?.toLocaleString() || '—' }} km</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car1.mileage?.toLocaleString() || '—' }} km</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car2.mileage?.toLocaleString() || '—' }} km</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Transmission</td>
-                <td class="px-6 py-5 text-center">{{ car1.transmission || '—' }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.transmission || '—' }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car1.transmission || '—' }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car2.transmission || '—' }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Fuel Type</td>
-                <td class="px-6 py-5 text-center">{{ car1.fuel_type || '—' }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.fuel_type || '—' }}</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car1.fuel_type || '—' }}</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car2.fuel_type || '—' }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-5 font-medium text-gray-700">Color</td>
-                <td class="px-6 py-5 text-center">{{ car1.color || '—' }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.color || '—' }}</td>
+                <td class="px-6 py-5  font-medium text-gray-700">Color</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car1.color || '—' }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car2.color || '—' }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Warranty</td>

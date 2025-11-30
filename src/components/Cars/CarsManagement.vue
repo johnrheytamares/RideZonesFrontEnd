@@ -229,7 +229,6 @@
                             'bg-emerald-500/10 text-emerald-400': car.status === 'available',
                             'bg-amber-500/10 text-amber-400': car.status === 'reserved',
                             'bg-rose-500/10 text-rose-400': car.status === 'sold',
-                            'bg-gray-500/10 text-gray-400': car.status === 'draft'
                           }">
                       {{ car.status.toUpperCase() }}
                     </span>

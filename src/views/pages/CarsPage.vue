@@ -141,10 +141,23 @@
               </button>
 
               <!-- Book Test Drive -->
-              <button @click="openModal(car.id)"
-                      class="mt-2 w-full bg-red-600 text-white py-3 font-medium hover:bg-red-700 transition text-lg rounded-lg">
+
+            <button 
+              @click="openModal(car.id)"
+              :disabled="!isCarAvailable(car)"
+              class="mt-2 w-full py-3 font-medium text-lg rounded-lg transition relative"
+              :class="isCarAvailable(car) 
+                ? 'bg-red-600 text-white hover:bg-red-700 cursor-pointer' 
+                : 'bg-gray-300 text-gray-600 cursor-not-allowed'">
+              
+              <span :class="{ 'opacity-0': !isCarAvailable(car) }">
                 Book Drive Test
-              </button>
+              </span>
+              
+              <span v-if="!isCarAvailable(car)" class="absolute inset-0 flex items-center justify-center text-sm font-medium">
+                {{ car.status === 'sold' ? 'Sold' : car.status === 'reserved' ? 'Reserved' : 'Not Available' }}
+              </span>
+            </button>
             </div>
           </div>
         </div>
@@ -316,6 +329,10 @@ const carMakes = ['Toyota', 'Honda', 'Ford', 'BMW', 'Nissan', 'Mitsubishi', 'Hyu
 const years = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i)
 const fuelTypes = ['Gasoline', 'Diesel', 'Electric', 'Hybrid']
 const maxPossiblePrice = 10000000
+
+const isCarAvailable = (car) => {
+  return car.status === 'available'
+}
 
 // Modal States
 const showModal = ref(false)
