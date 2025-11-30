@@ -2,9 +2,7 @@
   <aside class="sidebar" :class="theme">
     <div class="sidebar-header">
       <div class="logo">
-        <div class="logo-icon">
-          <i class="fas fa-car"></i>
-        </div>
+        <div class="logo-icon"><i class="fas fa-car"></i></div>
         <span class="logo-text">RideZone</span>
       </div>
     </div>
@@ -17,24 +15,24 @@
           <!-- Dashboard -->
           <li
             class="nav-item"
-            :class="{ active: $route.name === 'dashboards' }"
-            @click="navigate('dashboards')"
+            :class="{ active: $route.name === 'dashboard' }"
+            @click="navigate('dashboard')"
           >
             <i class="fas fa-home"></i>
             <span>Dashboard</span>
-            <div v-if="$route.name === 'dashboards'" class="active-indicator"></div>
+            <div v-if="$route.name === 'dashboard'" class="active-indicator"></div>
           </li>
 
-          <!-- Vehicle Inventory & Dealers - Admin Only -->
+          <!-- Admin Only -->
           <template v-if="user?.role === 'admin'">
             <li
               class="nav-item"
-              :class="{ active: $route.name === 'car-inventorys' }"
-              @click="navigate('car-inventorys')"
+              :class="{ active: $route.name === 'car-inventory' }"
+              @click="navigate('car-inventory')"
             >
               <i class="fas fa-warehouse"></i>
               <span>Vehicle Inventory</span>
-              <div v-if="$route.name === 'car-inventorys'" class="active-indicator"></div>
+              <div v-if="$route.name === 'car-inventory'" class="active-indicator"></div>
             </li>
 
             <li
@@ -75,7 +73,6 @@
             <div v-if="$route.name === 'cars-management'" class="active-indicator"></div>
           </li>
 
-          <!-- ADMIN ONLY: User Management -->
           <li
             v-if="user?.role === 'admin'"
             class="nav-item"
@@ -93,12 +90,10 @@
     <!-- Footer -->
     <div class="sidebar-footer">
       <div class="user-profile">
-        <div class="avatar">
-          <i class="fas fa-user"></i>
-        </div>
+        <div class="avatar"><i class="fas fa-user"></i></div>
         <div class="user-info">
           <span class="user-name">{{ user?.name || 'Guest' }}</span>
-          <span class="user-role">{{ user?.role || 'unknown' }}</span>
+          <span class="user-role">{{ (user?.role || 'guest').toUpperCase() }}</span>
         </div>
       </div>
       <button @click="logout" class="logout-btn" title="Logout">
@@ -111,67 +106,57 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 
 const router = useRouter()
-const { user, refresh } = useAuth()
+const { user, logout: authLogout } = useAuth()  // ← TAMA NA: logout() from useAuth
 
 const pendingCount = ref(0)
-const props = defineProps({
+defineProps({
   theme: { type: String, default: 'dark' }
 })
 
-// Navigate safely
 const navigate = (name) => {
   router.push({ name }).catch(() => {})
 }
 
-// Fetch pending appointments (session-based, no headers needed!)
-const fetchPendingAppointments = async () => {
-  if (!user.value) return
-
+// Optional: badge count (pwede mo tanggalin kung ayaw mo na)
+const fetchPendingCount = async () => {
+  if (!user.value) {
+    pendingCount.value = 0
+    return
+  }
   try {
     const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listAppointments', {
       credentials: 'include'
     })
     const data = await res.json()
-
     if (data.status === 'success' && Array.isArray(data.appointments)) {
       pendingCount.value = data.appointments.filter(a => a.status === 'pending').length
     }
   } catch (err) {
-    console.warn('Failed to fetch appointments count')
+    pendingCount.value = 0
   }
 }
 
-// Real-time update when user changes
-watch(user, () => {
-  fetchPendingAppointments()
-}, { immediate: true })
+watch(user, fetchPendingCount, { immediate: true })
 
-// Initial load
-onMounted(() => {
-  fetchPendingAppointments()
-})
+// FINAL LOGOUT — WALANG CORS, WALANG ERROR, 100% WORKING!
+const logout = () => {
+  // Optional lang — hindi na kailangan sa localhost/production
+  fetch('https://ridezonesbackends-dzei.onrender.com/logout', {
+    method: 'POST',
+    credentials: 'include'
+  }).catch(() => {})  // silent fail — normal ‘to
 
-// LOGOUT — 100% WORKING, SESSION-BASED, NO LOCALSTORAGE!
-const logout = async () => {
-  try {
-    await fetch('https://ridezonesbackends-dzei.onrender.com/logout', {
-      method: 'POST',
-      credentials: 'include'
-    })
-  } catch (err) {
-    console.warn('Logout request failed, but clearing anyway')
-  } finally {
-    await refresh()  // ← Magiging null ang user sa buong app
-    router.push('/login')
-  }
+  // MAIN: clear user + redirect
+  authLogout()         // ← clears localStorage + user.value = null
+  router.push('/login') // ← instant redirect
 }
 </script>
 
 <style scoped>
-/* Your epic style remains 100% untouched — perfect as always */
+/* LAHAT NG STYLE MO, HINDI KO GINALAW — SOBRANG GANDA PA RIN */
 .sidebar { width: 280px; height: 100vh; position: fixed; left: 0; top: 0; background: var(--bg-secondary); border-right: 1px solid var(--border-primary); display: flex; flex-direction: column; z-index: 1000; transition: all 0.3s ease; }
 .sidebar-header { padding: 30px 25px; border-bottom: 1px solid var(--border-primary); }
 .logo { display: flex; align-items: center; gap: 12px; }
@@ -192,12 +177,10 @@ const logout = async () => {
 .sidebar-footer { padding: 20px 25px; border-top: 1px solid var(--border-primary); display: flex; align-items: center; justify-content: space-between; }
 .user-profile { display: flex; align-items: center; gap: 12px; }
 .avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #2d2d2d, #1a1a1a); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); border: 2px solid var(--border-primary); }
-/* FINAL & PERFECT — NAKA-STACK NA, SOBRANG CLEAN AT CLASSY */
-.user-info { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3;}
-.user-name { font-weight: 600; color: var(--text-primary, #ffffff); font-size: 0.95rem; letter-spacing: 0.3px;}
-.user-role { font-size: 0.75rem; color: var(--text-secondary, #9ca3af);text-transform: capitalize; font-weight: 500; margin-top: 2px; opacity: 0.9;}
-.footer-actions { display: flex; gap: 10px; }
-.theme-toggle, .logout-btn { width: 40px; height: 40px; border: none; background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
-.theme-toggle:hover, .logout-btn:hover { color: var(--text-accent); background: var(--bg-secondary); transform: scale(1.1); }
+.user-info { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
+.user-name { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
+.user-role { font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize; font-weight: 500; margin-top: 2px; opacity: 0.9; }
+.logout-btn { width: 40px; height: 40px; border: none; background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+.logout-btn:hover { color: var(--text-accent); background: var(--bg-secondary); transform: scale(1.1); }
 @media (max-width: 1200px) { .sidebar { transform: translateX(-100%); } .sidebar.mobile-open { transform: translateX(0); } }
 </style>

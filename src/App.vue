@@ -1,8 +1,9 @@
+<!-- src/App.vue -->
 <template>
   <div id="app" :class="theme">
-    <!-- SIDEBAR: LILITAW LANG KAPAG MAY AUTHENTICATED USER TALAGA -->
+    <!-- SIDEBAR: Lalabas lang kapag PROTECTED PAGE (dashboard, cars-management, etc.) -->
     <Sidebar
-      v-if="isAuthenticated && user"
+      v-if="showSidebar"
       :theme="theme"
       :currentPage="$route.name"
       @toggle-theme="toggleTheme"
@@ -11,15 +12,9 @@
     <!-- MAIN CONTENT -->
     <div
       class="main-content"
-      :class="{ 'full-width': !isAuthenticated || !user }"
+      :class="{ 'full-width': !showSidebar }"
     >
-      <!-- HINTAYIN MATAPOS ANG AUTH BAGO MAG-RENDER NG ANUMAN -->
-      <div v-if="authReady">
-        <router-view :theme="theme" />
-      </div>
-      <div v-else class="loading-screen">
-        <div class="loader"></div>
-      </div>
+      <router-view :theme="theme" />
     </div>
   </div>
 </template>
@@ -27,21 +22,39 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuth } from './composables/useAuth'  // ← GAMITIN MO NA ANG @ ALIAS
 import Sidebar from './views/Sidebars.vue'
+import { useAuth } from './composables/useAuth'
 
 const route = useRoute()
-const { user, isAuthenticated, loading, waitForAuth } = useAuth()
+const { isAuthenticated, user } = useAuth()
 
-// === AUTH STATE ===
-const authReady = ref(false)
+// Listahan ng PUBLIC PAGES — walang sidebar, full width
+const publicPages = [
+  'home',
+  'login',
+  'registration',
+  'forgot-password',
+  'reset-password',
+  'cars-page',
+  'car-comparison',
+  'about',
+  'contact',
+  'google-form',
+  'appointmentpage',
+  // optional: kung may iba ka pang landing page components
+  'featured-cars', 'hero-section', 'services-section', 'testimonials-section'
+]
 
-onMounted(async () => {
-  await waitForAuth()     // ← TAMA NA ‘TO! NASA LOOB NG async function
-  authReady.value = true  // ← NGAYON LANG MAGRE-RENDER ANG LAHAT
+// Computed: May sidebar ba o full width?
+const showSidebar = computed(() => {
+  // Kung public page → walang sidebar
+  if (publicPages.includes(route.name)) return false
+  
+  // Kung naka-login at hindi public → may sidebar
+  return isAuthenticated.value && user.value
 })
 
-// === THEME ===
+// Theme system — with localStorage save
 const theme = ref('dark')
 
 const toggleTheme = () => {
@@ -50,9 +63,10 @@ const toggleTheme = () => {
   localStorage.setItem('ridezone-theme', theme.value)
 }
 
+// Load saved theme on mount
 onMounted(() => {
   const saved = localStorage.getItem('ridezone-theme')
-  if (saved) {
+  if (saved === 'light' || saved === 'dark') {
     theme.value = saved
     document.documentElement.setAttribute('data-theme', theme.value)
   }
@@ -64,14 +78,13 @@ onMounted(() => {
   display: flex;
   min-height: 100vh;
   background: var(--bg-primary);
-  transition: all 0.3s ease;
+  transition: background 0.3s ease;
 }
 
 .main-content {
   flex: 1;
-  margin-left: 280px;
+  margin-left: 280px;           /* space para sa sidebar */
   min-height: 100vh;
-  background: var(--bg-primary);
   transition: margin-left 0.3s ease;
 }
 
@@ -80,33 +93,16 @@ onMounted(() => {
   width: 100%;
 }
 
-.loading-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: var(--bg-primary);
-}
-
-.loader {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--border-primary);
-  border-top: 4px solid var(--text-accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
+/* Mobile: hide sidebar by default */
 @media (max-width: 1200px) {
-  .main-content { margin-left: 0; padding-top: 70px; }
+  .main-content {
+    margin-left: 0;
+    padding-top: 70px; /* space para sa future mobile header */
+  }
 }
 </style>
 
-<!-- GLOBAL STYLES MO — SAME LANG, PERO MAS CLEAN NA -->
+<!-- GLOBAL STYLES (same sa dati mo, mas clean lang) -->
 <style>
 :root {
   --bg-primary: #0a0a0a;
@@ -128,8 +124,14 @@ onMounted(() => {
   --border-primary: rgba(0, 0, 0, 0.1);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body, html, #app { width: 100%; height: 100%; font-family: 'Poppins', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+* { margin: 0; padding:0; box-sizing:border-box; }
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  font-family: 'Poppins', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
 
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }

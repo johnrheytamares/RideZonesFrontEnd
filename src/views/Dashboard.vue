@@ -74,10 +74,15 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="text-center">
-        <div class="spinner"></div>
-        <p class="text-gray-400 mt-6 text-lg font-medium opacity-80">Loading analytics...</p>
+    <div v-if="loading" class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/90 backdrop-blur-md"></div>
+      
+      <div class="relative z-10 justify-content">
+        <div class="w-20 h-20 mx-auto mb-6 border-6 border-red-500 border-t-red-600 rounded-full animate-spin shadow-2xl shadow-red-600/20"></div>
+        <p class="text-xl font-semibold text-white tracking-wide">
+          Loading analytics
+          <span class="inline-block animate-pulse">...</span>
+        </p>
       </div>
     </div>
   </div>

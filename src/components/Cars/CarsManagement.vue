@@ -276,6 +276,11 @@
          :class="toast.type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'">
       {{ toast.message }}
     </div>
+    <!-- Sa form mo, below ng Model or Variant input -->
+    <div v-if="isDuplicateCar" class="text-red-500 text-sm mt-2 flex items-center gap-2">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>This vehicle already exists in inventory!</span>
+    </div>
   </div>
 </template>
 
@@ -297,28 +302,32 @@ const form = ref({
 
 const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
 
+// COMPUTED COUNTS
 const availableCount = computed(() => cars.value.filter(c => c.status === 'available').length)
 const reservedCount = computed(() => cars.value.filter(c => c.status === 'reserved').length)
 
-const getCarImage = (path) => {
-  // Kung wala talagang image
-  if (!path) return '/default-car.jpg'
+// DUPLICATE CHECK — SAKTO NA ‘TO (Make + Model + Year + Variant)
+const isDuplicateCar = computed(() => {
+  if (!form.value.make?.trim() || !form.value.model?.trim()) return false
 
-  // KUNG BASE64 NA (nagsisimula sa "data:image")
-  if (typeof path === 'string' && path.startsWith('data:image')) {
-    return path
-  }
+  const newKey = `${form.value.make} ${form.value.model} ${form.value.year || ''} ${form.value.variant || ''}`.trim().toLowerCase()
 
-  // KUNG LUMA PA RIN NA MAY http o https (kung may old images pa)
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path
-  }
+  return cars.value.some(car => {
+    if (isEditing.value && car.id === editId.value) return false // huwag i-count yung sarili
+    const existingKey = `${car.make} ${car.model} ${car.year || ''} ${car.variant || ''}`.trim().toLowerCase()
+    return existingKey === newKey
+  })
+})
 
-  // KUNG LUMA NA PATH NA "/uploads/cars/xxx.jpg" (hindi na gagana sa Vercel)
-  // → Pwede mo na i-ignore or maglagay ng fallback
-  return '/default-car.jpg' // or placeholder mo
+// IMAGE HANDLING — TAMA NA, DIRECT BASE64
+const getCarImage = (imageData) => {
+  if (!imageData) return '/default-car.jpg'
+  if (imageData.startsWith('data:image')) return imageData
+  if (imageData.startsWith('http')) return imageData
+  return '/default-car.jpg'
 }
 
+// WARRANTY AUTO CALC
 const calculateWarrantyEnd = () => {
   if (!form.value.warranty_start_date || !form.value.warranty_period) {
     form.value.warranty_end_date = ''
@@ -337,87 +346,81 @@ const showToast = (message, type = 'success') => {
   setTimeout(() => toast.value.show = false, 4000)
 }
 
+// IMAGE UPLOAD — MAY USER HEADER NA!
 const handleImageUpload = async (e) => {
-  const file = e.target.files[0];
-  if (!file) {
-    console.warn('No file selected for upload.');
-    return;
+  const file = e.target.files[0]
+  if (!file) return
+
+  if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+    showToast('JPG/PNG only!', 'error')
+    return
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('Max 2MB!', 'error')
+    return
   }
 
-  // Validate file type
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-  if (!allowedTypes.includes(file.type)) {
-    console.warn(`Invalid file type: ${file.type}`, file.name);
-    showToast('JPG/PNG only!', 'error');
-    return;
+  const formData = new FormData()
+  formData.append('main_image_file', file)
+
+  // IMPORTANT: Send user info
+  const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+  if (!user.id) {
+    showToast('Please login again', 'error')
+    return
   }
 
-  // Validate file size (2MB max)
-  const maxSize = 2 * 1024 * 1024; // 2MB in bytes
-  if (file.size > maxSize) {
-    console.warn(`File too large: ${file.size} bytes (max: ${maxSize})`, file.name);
-    showToast('Max 2MB!', 'error');
-    return;
-  }
-
-  console.log(`Uploading image: ${file.name} (${file.type}, ${Math.round(file.size / 1024)} KB)`);
-
-  const formData = new FormData();
-  formData.append('main_image_file', file);
-
-  loading.value = true;
+  loading.value = true
   try {
-    const response = await fetch(`${API_BASE}/upload-car-image`, {
+    const res = await fetch(`${API_BASE}/upload-car-image`, {
       method: 'POST',
       body: formData,
-      // ⚠️ Do NOT set Content-Type! FormData sets it automatically with boundary.
-    });
+      headers: {
+        'X-User': JSON.stringify(user) // ← IMPORTANT!
+      }
+    })
 
-    // Check if response is OK (status 200-299)
-    if (!response.ok) {
-      const errorMessage = `HTTP error! status: ${response.status}`;
-      console.error('Upload failed:', errorMessage);
-      throw new Error(errorMessage);
-    }
-
-    const data = await response.json();
-
-    // Log full response for debugging
-    console.log('Upload response:', data);
-
+    const data = await res.json()
     if (data.status === 'success' && data.url) {
-      form.value.main_image = data.url;                    // base64 string
-      previewImage.value = data.url;                       // ← DIRECT base64, hindi na dadaan sa getCarImage
-      showToast('Image uploaded perfectly!');
+      form.value.main_image = data.url
+      previewImage.value = data.url
+      showToast('Image uploaded!')
     } else {
-      console.error('Unexpected response format or missing URL:', data);
-      showToast('Upload failed: Invalid response', 'error');
+      showToast('Upload failed', 'error')
     }
-  } catch (error) {
-    console.error('Upload error caught:', error);
-    showToast('Upload failed', 'error');
+  } catch (err) {
+    showToast('Upload error', 'error')
   } finally {
-    loading.value = false;
-    console.log('Upload process finished.');
+    loading.value = false
   }
-};
+}
 
+// CRUD OPERATIONS — LAHAT MAY DUPLICATE CHECK
 const fetchCars = async () => {
   loading.value = true
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
     const res = await fetch(`${API_BASE}/listcars`, {
       headers: { 'X-User': JSON.stringify(user) }
     })
     const data = await res.json()
     if (data.status === 'success') cars.value = data.cars || []
-  } catch { } finally { loading.value = false }
+  } catch (err) {
+    showToast('Failed to load vehicles', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
 const createCar = async () => {
+  if (isDuplicateCar.value) {
+    showToast('Vehicle already exists!', 'error')
+    return
+  }
+
   loading.value = true
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
     const res = await fetch(`${API_BASE}/createcars`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-User': JSON.stringify(user) },
@@ -425,41 +428,58 @@ const createCar = async () => {
     })
     const data = await res.json()
     if (data.status === 'success') {
-      showToast('Vehicle added successfully!')
+      showToast('Vehicle added!', 'success')
       resetForm()
       await fetchCars()
+    } else {
+      showToast(data.message || 'Add failed', 'error')
     }
-  } catch { showToast('Failed to add vehicle', 'error') } finally { loading.value = false }
+  } catch {
+    showToast('Network error', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
 const updateCar = async () => {
+  if (isDuplicateCar.value) {
+    showToast('Another vehicle with same details exists!', 'error')
+    return
+  }
+
   loading.value = true
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
     const res = await fetch(`${API_BASE}/updatecars/${editId.value}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-User': JSON.stringify(user) },
       body: JSON.stringify(form.value)
     })
     if (res.ok) {
-      showToast('Vehicle updated successfully!')
+      showToast('Vehicle updated!', 'success')
       cancelEdit()
       await fetchCars()
     }
-  } catch { showToast('Update failed', 'error') } finally { loading.value = false }
+  } catch {
+    showToast('Update failed', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
 const deleteCar = async (id) => {
-  if (!confirm('Delete this vehicle permanently?')) return
+  if (!confirm('Delete this vehicle?')) return
   try {
-    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
     await fetch(`${API_BASE}/deletecars/${id}`, {
       method: 'DELETE',
       headers: { 'X-User': JSON.stringify(user) }
     })
     showToast('Vehicle deleted')
     await fetchCars()
-  } catch { showToast('Delete failed', 'error') }
+  } catch {
+    showToast('Delete failed', 'error')
+  }
 }
 
 const editCar = (car) => {
@@ -487,10 +507,10 @@ const resetForm = () => {
 
 onMounted(() => {
   fetchCars()
-  // Auto-login admin for testing (remove in production)
-  if (!localStorage.getItem('user')) {
-    localStorage.setItem('user', JSON.stringify({ id: 1, role: 'admin', dealer_id: 1 }))
-  }
+  // Comment out sa production!
+  // if (!localStorage.getItem('rz_user')) {
+  //   localStorage.setItem('rz_user', JSON.stringify({ id: 1, role: 'admin', dealer_id: 1 }))
+  // }
 })
 </script>
 

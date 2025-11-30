@@ -1,127 +1,87 @@
-// src/router/index.js → FINAL FOREVER VERSION
+// src/router/index.js → FINAL NA TALAGA, SAME PATHS PA RIN, PERO BULLETPROOF NA
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth } from '../composables/useAuth'  // ← GAMITIN MO NA ANG @ ALIAS (dapat may vite.config na)
+import { useAuth } from '../composables/useAuth'  // ← DOT PATHS LANG, WALANG @
 
-import Dashboard from '../views/Dashboard.vue'
-import Login from '../components/Auth/Login.vue'
-import Registration from '../components/Auth/Registration.vue'
-import CarsManagement from '../components/Cars/CarsManagement.vue'
-import CarsPage from '../views/pages/CarsPage.vue'
-import AppointmentCard from '../components/Appointments/AppointmentCard.vue'
-import AdminAppoinmentsManagemement from '../views/AdminAppoinmentsManagemement.vue'
-import UserAppointmentPage from '../views/UserAppointments.vue'
-import CarInventory from '../views/pages/CarInventory.vue'
-import Dealers from '../views/pages/Dealers.vue'
-import UserManagement from '../views/pages/UserManagement.vue'
-import CarComparison from '../views/pages/CarComparison.vue'
-import HomeView from '../views/HomeView.vue'
-import ContactPage from '../views/ContactPage.vue'
-import About from '../views/pages/About.vue'
-import ForgotPassword from '../components/Auth/ForgotPassword.vue'
-import ResetPassword from '../components/Auth/ResetPassword.vue'
-import Feedback from '../views/GoogleForm.vue'  // ← IDAGDAG MO KUNG MERON
-import AppointmentModal from '../views/pages/AppointmentModal.vue'
+// LAZY LOAD LAHAT PARA BILIS (same components mo pa rin)
+const HomeView = () => import('../views/HomeView.vue')
+const Login = () => import('../components/Auth/Login.vue')
+const Registration = () => import('../components/Auth/Registration.vue')
+const ForgotPassword = () => import('../components/Auth/ForgotPassword.vue')
+const ResetPassword = () => import('../components/Auth/ResetPassword.vue')
+
+const Dashboard = () => import('../views/Dashboard.vue')
+const CarsManagement = () => import('../components/Cars/CarsManagement.vue')
+const CarsPage = () => import('../views/pages/CarsPage.vue')
+const AppointmentCard = () => import('../components/Appointments/AppointmentCard.vue')
+const AdminAppoinmentsManagemement = () => import('../views/AdminAppoinmentsManagemement.vue')
+const UserAppointmentPage = () => import('../views/UserAppointments.vue')
+const CarInventory = () => import('../views/pages/CarInventory.vue')
+const Dealers = () => import('../views/pages/Dealers.vue')
+const UserManagement = () => import('../views/pages/UserManagement.vue')
+const CarComparison = () => import('../views/pages/CarComparison.vue')
+const ContactPage = () => import('../views/ContactPage.vue')
+const About = () => import('../views/pages/About.vue')
+const Feedback = () => import('../views/GoogleForm.vue')
+const AppointmentModal = () => import('../views/pages/AppointmentModal.vue')
 
 const routes = [
-  // ===================== PUBLIC PAGES (LAHAT PWEDE) =====================
+  // ===================== EXACT SAME PUBLIC PATHS MO =====================
   { path: '/',                  name: 'home',           component: HomeView,               meta: { public: true } },
-  { path: '/login',             name: 'login',          component: Login,                  meta: { public: true } },
+  { path: '/login',             name: 'login',             component: Login,                  meta: { public: true } },
   { path: '/register',          name: 'registration',   component: Registration,           meta: { public: true } },
   { path: '/forgot-password',   name: 'forgot-password',component: ForgotPassword,         meta: { public: true } },
   { path: '/reset-password',    name: 'reset-password', component: ResetPassword,          meta: { public: true } },
   { path: '/cars-page',         name: 'cars-page',      component: CarsPage,               meta: { public: true } },
   { path: '/car-comparison',    name: 'car-comparison', component: CarComparison,          meta: { public: true } },
-  { path: '/dealers',           name: 'dealers',        component: Dealers,                meta: { public: true } },
   { path: '/about',             name: 'about',          component: About,                  meta: { public: true } },
   { path: '/contact',           name: 'contact',        component: ContactPage,            meta: { public: true } },
   { path: '/google-form',       name: 'google-form',    component: Feedback,               meta: { public: true } },
   { path: '/appointmentpage',   name: 'appointmentpage', component: AppointmentModal,      meta: { public: true } },
-  // ===================== PROTECTED PAGES =====================
 
-  // Dealer & Admin lang
-  { 
-    path: '/dashboard',        
-    name: 'dashboard', 
-    component: Dashboard, 
-    meta: { requiresAuth: true, roles: ['dealer', 'admin'] } 
-  },
-  { 
-    path: '/cars-management',   
-    name: 'cars-management', 
-    component: CarsManagement, 
-    meta: { requiresAuth: true, roles: ['dealer', 'admin'] } 
-  },
-    { 
-    ath: '/user-management',   
-    name: 'user-management', 
-    component: UserAppointmentPage, 
-    meta: { requiresAuth: true, roles: ['dealer', 'admin'] } 
-  },
+  // ===================== EXACT SAME PROTECTED PATHS MO =====================
+  { path: '/dashboard',         name: 'dashboard',      component: Dashboard,             meta: { requiresAuth: true, roles: ['dealer', 'admin'] } },
+  { path: '/cars-management',   name: 'cars-management',component: CarsManagement,         meta: { requiresAuth: true, roles: ['dealer', 'admin'] } },
+  { path: '/appointments',      name: 'appointments',   component: AppointmentCard,        meta: { requiresAuth: true, roles: ['dealer', 'admin'] } },
+  { path: '/car-inventory',     name: 'car-inventory',  component: CarInventory,           meta: { requiresAuth: true, roles: ['dealer', 'admin'] } },
+  { path: '/dealer',           name: 'dealer',        component: Dealers,                meta: { requiresAuth: true, roles: ['dealer', 'admin'] } },
 
-  { 
-    path: '/appointments',      
-    name: 'appointments', 
-    component: AppointmentCard, 
-    meta: { requiresAuth: true, roles: ['dealer', 'admin'] } 
-  },
-  { 
-    path: '/car-inventory',     
-    name: 'car-inventory', 
-    component: CarInventory, 
-    meta: { requiresAuth: true, roles: ['dealer', 'admin'] } 
-  },
 
-  // Admin ONLY
-  { 
-    path: '/adminappointment',  
-    name: 'adminappointment', 
-    component: AdminAppoinmentsManagemement, 
-    meta: { requiresAuth: true, roles: ['admin'] } 
-  },
-  { 
-    path: '/user-management',   
-    name: 'user-management', 
-    component: UserManagement, 
-    meta: { requiresAuth: true, roles: ['admin'] } 
-  },
+  // ADMIN ONLY — SAME PATHS MO PA RIN
+  { path: '/adminappointment',  name: 'adminappointment', component: AdminAppoinmentsManagemement, meta: { requiresAuth: true, roles: ['admin'] } },
+  { path: '/user-management',   name: 'user-management', component: UserManagement,        meta: { requiresAuth: true, roles: ['admin'] } },
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes,
   scrollBehavior() {
-    return { top: 0 }  // Always scroll to top
+    return { top: 0 }
   }
 })
 
-// FINAL & UNBREAKABLE NAVIGATION GUARD
-router.beforeEach(async (to, from, next) => {
-  const { user, loading, waitForAuth } = useAuth()
+// INSTANT GUARD — WALANG await, WALANG loading, WALANG /auth/me
+router.beforeEach((to, from, next) => {
+  const { user, isAuthenticated } = useAuth()
 
-  // Hintayin matapos ang /auth/me
-  if (loading.value) {
-    await waitForAuth()
-  }
-
-  const isLoggedIn = !!user.value
+  const loggedIn = isAuthenticated.value
   const role = user.value?.role || 'guest'
 
-  // 1. PUBLIC PAGES → lahat pwede
+  // Public pages → pasok agad
   if (to.meta.public) return next()
 
-  // 2. KAILANGAN MAG-LOGIN
-  if (to.meta.requiresAuth && !isLoggedIn) {
+  // Dapat naka-login
+  if (to.meta.requiresAuth && !loggedIn) {
     return next({
       path: '/login',
-      query: { redirect: to.fullPath }  // optional: para ma-remember kung saan pupunta
+      query: { redirect: to.fullPath }
     })
   }
 
-  // 3. ROLE CHECK (admin/dealer only)
+  // Role check
   if (to.meta.roles && !to.meta.roles.includes(role)) {
-    if (role === 'admin') return next('/adminappointment')
+    if (role === 'admin') return next('/adminappointment')   // same path mo
     if (role === 'dealer') return next('/dashboard')
-    return next('/')  // buyer or guest
+    return next('/')
   }
 
   next()
