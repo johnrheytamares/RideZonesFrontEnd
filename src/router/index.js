@@ -1,13 +1,13 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'  // ← DAPAT GANITO (Pinia)
+import { useAuth } from '../composables/useAuth'  // ← DAPAT GANITO (Pinia)
 
 import Dashboard from '../views/Dashboard.vue'
-import Login from './components/Auth/Login.vue'
-import Registration from './components/Auth/Registration.vue'
-import CarsManagement from './components/Cars/CarsManagement.vue'
+import Login from '../components/Auth/Login.vue'
+import Registration from '../components/Auth/Registration.vue'
+import CarsManagement from '../components/Cars/CarsManagement.vue'
 import CarsPage from '../views/pages/CarsPage.vue'
-import AppointmentCard from './components/Appointments/AppointmentCard.vue'
+import AppointmentCard from '../components/Appointments/AppointmentCard.vue'
 import AdminAppoinmentsManagemement from '../views/AdminAppoinmentsManagemement.vue'
 import UserAppointmentPage from '../views/UserAppointments.vue'
 import CarInventory from '../views/pages/CarInventory.vue'
@@ -17,8 +17,9 @@ import CarComparison from '../views/pages/CarComparison.vue'
 import HomeView from '../views/HomeView.vue'
 import ContactPage from '../views/ContactPage.vue'
 import About from '../views/pages/About.vue'
-import ForgotPassword from './components/Auth/ForgotPassword.vue'
-import ResetPassword from './components/Auth/ResetPassword.vue'
+import Feedback from '../views/GoogleForm.vue'
+import ForgotPassword from '../components/Auth/ForgotPassword.vue'
+import ResetPassword from '../components/Auth/ResetPassword.vue'
 
 const routes = [
   { path: '/login', name: 'login', component: Login, meta: { public: true } },
@@ -33,6 +34,7 @@ const routes = [
   { path: '/dealers', name: 'dealer', component: Dealers, meta: { public: true } },
   { path: '/about', name: 'about', component: About, meta: { public: true } },
   { path: '/contact', name: 'contact', component: ContactPage, meta: { public: true } },
+  { path: '/google-form', name:'google-form', component: Feedback, meta: {public: true}},
 
   // BUYER
   { path: '/appointmentpage', name: 'appointmentpage', component: UserAppointmentPage, meta: { requiresAuth: true } },
@@ -55,7 +57,7 @@ const router = createRouter({
 
 // FINAL & PERFECT NAVIGATION GUARD
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()  // ← DAPAT NASA LOOB, REACTIVE!
+  const authStore = useAuth()  // ← DAPAT NASA LOOB, REACTIVE!
 
   // Hintayin ang auth check
   if (authStore.loading) {

@@ -21,7 +21,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from './composables/useAuth'
 import Sidebar from './views/Sidebars.vue'
 
 const { user, loading } = useAuth()

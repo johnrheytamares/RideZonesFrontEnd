@@ -153,7 +153,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'  // ← IMPORTANT: Gumawa ka nito
+import { useAuth } from '../../composables/useAuth'  // ← IMPORTANT: Gumawa ka nito
 import ForgotPasswordModal from './ForgotPassword.vue'
 
 const router = useRouter()
