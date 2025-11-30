@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <!-- Background Elements -->
+    <!-- Background Effects -->
     <div class="background-elements">
       <div class="floating-car"></div>
       <div class="luxury-pattern"></div>
@@ -13,27 +13,27 @@
 
     <!-- Main Login Card -->
     <div class="login-card">
-      <!-- Header -->
       <div class="login-header">
         <div class="brand-logo">
           <i class="fas fa-crown"></i>
           <span class="brand-text">RideZone</span>
         </div>
         <h1 class="welcome-text">Welcome Back</h1>
-        <p class="subtitle">Access your luxury automotive dashboard</p>
+        <p class="subtitle">Exclusive access for dealers & administrators</p>
       </div>
 
-      <!-- Email/Password Form -->
+      <!-- Form -->
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
           <div class="input-container">
-            <i class="input-icon fas fa-user"></i>
-            <input 
-              v-model="email" 
-              type="text" 
-              class="form-input" 
-              placeholder="Email or Username" 
-              required 
+            <i class="input-icon fas fa-envelope"></i>
+            <input
+              v-model="email"
+              type="email"
+              class="form-input"
+              placeholder="admin@ridezone.com"
+              required
+              autocomplete="email"
             />
             <div class="input-underline"></div>
           </div>
@@ -42,16 +42,17 @@
         <div class="form-group">
           <div class="input-container">
             <i class="input-icon fas fa-lock"></i>
-            <input 
-              v-model="password" 
+            <input
+              v-model="password"
               :type="showPassword ? 'text' : 'password'"
-              class="form-input" 
-              placeholder="Enter your password" 
-              required 
+              class="form-input"
+              placeholder="Enter your password"
+              required
+              autocomplete="current-password"
             />
             <div class="input-underline"></div>
-            <i 
-              class="fas password-toggle" 
+            <i
+              class="password-toggle fas"
               :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"
               @click="showPassword = !showPassword"
             ></i>
@@ -64,15 +65,15 @@
             <span class="checkmark"></span>
             Remember me
           </label>
-        <button @click="openForgotModal = true" type="button" class="forgot-password-link">
-          Forgot Password?
-        </button>
+          <button type="button" class="forgot-password-link" @click="openForgotModal = true">
+            Forgot Password?
+          </button>
         </div>
 
-        <button 
-          type="submit" 
-          class="login-button" 
-          :class="{ loading: isLoading }" 
+        <button
+          type="submit"
+          class="login-button"
+          :class="{ loading: isLoading }"
           :disabled="isLoading"
         >
           <span class="button-text">
@@ -85,200 +86,178 @@
         </button>
       </form>
 
-      <!-- Divider + Google Sign-In -->
-      <div class="divider">
-        <span class="divider-text">or continue with</span>
-      </div>
+      <!-- Google Sign-In -->
+      <div class="divider"><span>or continue with</span></div>
       <div class="google-login">
-        <div id="g_id_signin"></div>
-      </div>
-
-      <!-- Registration Link -->
-      <div class="registration-section">
-        <div class="login-redirect">
-          <p>Don't have an account? <router-link to="/register" class="login-link">Sign Up</router-link></p>
-        </div>
+        <div id="google-signin-button"></div>
       </div>
 
       <!-- Messages -->
-      <div class="error-message" v-if="errorMessage" @click="errorMessage = ''">
-        <i class="fas fa-exclamation-circle"></i>
-        {{ errorMessage }}
-        <i class="fas fa-times close-error"></i>
-      </div>
+      <transition name="fade">
+        <div v-if="errorMessage" class="error-message" @click="errorMessage = ''">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ errorMessage }}
+          <i class="fas fa-times close-error"></i>
+        </div>
+      </transition>
 
-      <div class="success-message" v-if="successMessage">
-        <i class="fas fa-check-circle"></i> {{ successMessage }}
-      </div>
-
-      <!-- Footer
-      <div class="login-footer">
-        <p class="footer-text">
-          Premium Automotive Management System
-          <span class="version">v2.1.4</span>
-        </p>
-      </div> -->
-      <ForgotPasswordModal :isOpen="openForgotModal" @update:isOpen="openForgotModal = $event" />
+      <transition name="fade">
+        <div v-if="successMessage" class="success-message">
+          <i class="fas fa-check-circle"></i>
+          {{ successMessage }}
+        </div>
+      </transition>
     </div>
 
-    <!-- Decorative Side Panel -->
+    <!-- Right Panel -->
     <div class="decorative-panel">
       <div class="panel-content">
-        <div class="luxury-badge">
-          <i class="fas fa-gem"></i>
-        </div>
-        <h3 class="panel-title">Exclusive Access</h3>
+        <div class="luxury-badge"><i class="fas fa-gem"></i></div>
+        <h3 class="panel-title">Dealer & Admin Portal</h3>
         <p class="panel-description">
-          Manage luxury vehicles, client appointments, and dealership operations with our premium dashboard.
+          Manage your luxury inventory, appointments, and client relationships with precision.
         </p>
         <div class="feature-list">
-          <div class="feature-item">
-            <i class="fas fa-car"></i>
-            <span>Vehicle Management</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-calendar-alt"></i>
-            <span>Appointment Scheduling</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-chart-line"></i>
-            <span>Sales Analytics</span>
-          </div>
+          <div class="feature-item"><i class="fas fa-car"></i><span>Premium Inventory</span></div>
+          <div class="feature-item"><i class="fas fa-calendar-check"></i><span>Smart Scheduling</span></div>
+          <div class="feature-item"><i class="fas fa-chart-bar"></i><span>Analytics Dashboard</span></div>
         </div>
       </div>
     </div>
+
+    <!-- Modal -->
+    <ForgotPasswordModal
+      :isOpen="openForgotModal"
+      @update:isOpen="openForgotModal = $event"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '../../composables/useAuth'  // ← IMPORTANT: Gumawa ka nito
+import { useAuth } from '../../composables/useAuth'
 import ForgotPasswordModal from './ForgotPassword.vue'
 
 const router = useRouter()
-const { refresh } = useAuth()  // ← Ito ang magre-refresh ng user sa buong app
+const { login, refresh, user } = useAuth()  // ← GAMITIN MO NA ANG useAuth MO!
 
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
-const rememberMe = ref(false)
+const rememberMe = ref(true)
 const isLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const openForgotModal = ref(false)
 
-// ==================== EMAIL/PASSWORD LOGIN ====================
+// ==================== MAIN LOGIN FUNCTION ====================
 const handleLogin = async () => {
+  errorMessage.value = ''
+  successMessage.value = ''
+
   if (!email.value || !password.value) {
-    errorMessage.value = 'Please fill in all fields'
+    errorMessage.value = 'Please enter email and password'
     return
   }
 
   isLoading.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
 
   try {
-    const response = await fetch('https://ridezonesbackends-dzei.onrender.com/login', {
-      method: 'POST',
-      credentials: 'include',  // ← CRITICAL: para ma-save ang session
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        email: email.value, 
-        password: password.value 
-      })
-    })
+    const success = await login(email.value, password.value)
 
-    const data = await response.json()
-
-    if (response.ok && data.status === 'success') {
-      const user = data.user
-
-      // BLOCK BUYER — ADMIN & DEALER LANG
-      if (!['admin', 'dealer'].includes(user.role)) {
-        errorMessage.value = 'Access Denied: Only Admin and Dealer accounts can log in here.'
-        isLoading.value = false
+    if (success && user.value) {
+      // BLOCK BUYER — ADMIN & DEALER LANG TALAGA
+      if (!['admin', 'dealer'].includes(user.value.role)) {
+        errorMessage.value = 'Access restricted to Admin and Dealer accounts only.'
+        await fetch('https://ridezonesbackends-dzei.onrender.com/logout', { method: 'POST', credentials: 'include' })
         return
       }
 
-      // SUCCESS — I-refresh ang global user state
-      await refresh()  // ← DITO NA NAG-A-UPDATE ANG BUONG APP!
-
-      successMessage.value = `Welcome back, ${user.name || user.role}!`
-      
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 800)
-
+      successMessage.value = `Welcome back, ${user.value.name}!`
+      setTimeout(() => router.push('/dashboard'), 1000)
     } else {
-      errorMessage.value = data.message || 'Invalid email or password'
+      errorMessage.value = 'Invalid email or password'
     }
   } catch (err) {
-    errorMessage.value = 'Server not responding. Please try again later.'
+    errorMessage.value = 'Login failed. Please try again.'
     console.error(err)
   } finally {
     isLoading.value = false
   }
 }
 
-// ==================== GOOGLE LOGIN ====================
-const processGoogleLogin = async (token) => {
+// ==================== GOOGLE LOGIN (SAFE & CLEAN) ====================
+let googleScriptLoaded = false
+
+const loadGoogleScript = () => {
+  if (googleScriptLoaded) return
+  googleScriptLoaded = true
+
+  const script = document.createElement('script')
+  script.src = 'https://accounts.google.com/gsi/client'
+  script.async = true
+  script.defer = true
+  script.onload = initializeGoogleSignIn
+  document.head.appendChild(script)
+}
+
+const initializeGoogleSignIn = () => {
+  if (!window.google?.accounts) return
+
+  window.google.accounts.id.initialize({
+    client_id: '1084979266133-d1bvpmpb5devqn5cl0pscuv9k01l9p9t.apps.googleusercontent.com',
+    callback: handleGoogleCallback,
+    auto_select: false
+  })
+
+  window.google.accounts.id.renderButton(
+    document.getElementById('google-signin-button'),
+    { theme: 'outline', size: 'large', width: '100%', text: 'continue_with' }
+  )
+}
+
+const handleGoogleCallback = async (response) => {
   isLoading.value = true
   try {
     const res = await fetch('https://ridezonesbackends-dzei.onrender.com/googleCallback', {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential: token })
+      body: JSON.stringify({ credential: response.credential })
     })
 
     const data = await res.json()
 
     if (data.success) {
-      await refresh()  // ← SAME: i-refresh ang user sa buong app
-      router.push('/dashboard')
+      await refresh()
+      if (['admin', 'dealer'].includes(user.value?.role)) {
+        router.push('/dashboard')
+      } else {
+        errorMessage.value = 'Only Admin/Dealer accounts can access this portal.'
+      }
     } else {
       errorMessage.value = data.error || 'Google login failed'
     }
   } catch (err) {
-    // TEMP DEV BYPASS (tanggalin mo ‘to pag live na!)
-    await refresh()
-    router.push('/dashboard')
+    // DEV ONLY — tanggalin pag live na!
+    if (import.meta.env.DEV) {
+      await refresh()
+      router.push('/dashboard')
+    } else {
+      errorMessage.value = 'Connection failed'
+    }
   } finally {
     isLoading.value = false
   }
 }
 
-// Google Sign-In (mounted)
-const loadGoogleSignIn = () => {
-  if (window.google?.accounts?.id) {
-    renderGoogleButton()
-    return
-  }
-
-  const script = document.createElement('script')
-  script.src = 'https://accounts.google.com/gsi/client'
-  script.async = true
-  script.defer = true
-  script.onload = renderGoogleButton
-  document.head.appendChild(script)
-}
-
-const renderGoogleButton = () => {
-  window.google.accounts.id.initialize({
-    client_id: '1084979266133-d1bvpmpb5devqn5cl0pscuv9k01l9p9t.apps.googleusercontent.com',
-    callback: (response) => processGoogleLogin(response.credential)
-  })
-
-  window.google.accounts.id.renderButton(
-    document.getElementById('g_id_signin'),
-    { theme: 'outline', size: 'large', width: 350 }
-  )
-}
-
 onMounted(() => {
-  loadGoogleSignIn()
+  loadGoogleScript()
+})
+
+onUnmounted(() => {
+  // Cleanup if needed
 })
 </script>
 
