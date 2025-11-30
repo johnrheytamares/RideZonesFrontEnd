@@ -9,33 +9,32 @@
         <router-link to="/about" class="text-red-600 border-b-2 border-red-600">About</router-link>
         <router-link to="/contact" class="hover:text-red-600">Contact</router-link>
         <router-link to="/google-form" class="hover:text-red-600">Feedback</router-link>
-        <!-- <button @click="$router.push({ name: 'login' })" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
-          Login
-        </button> -->
       </nav>
     </header>
+
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-red-700 via-red-600 to-gray-700 text-white py-32 overflow-hidden">
       <div class="absolute inset-0 bg-black/50"></div>
       <div class="absolute inset-0 bg-[url('/hero-about.jpg')] bg-cover bg-center opacity-20"></div>
       
-      <div class="relative max-w-6xl mx-auto px-6 text-center">
+      <div class="relative max-w-6xl mx-auto px-6 text-center fade-up">
         <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6">
           Welcome to <span class="text-red-400">RideZone</span>
         </h1>
         <p class="text-xl md:text-2xl font-light max-w-4xl mx-auto leading-relaxed">
           Your trusted partner in finding the perfect luxury and premium vehicle in the Philippines.
         </p>
+
         <div class="mt-10 flex justify-center gap-6">
-          <div class="text-center">
+          <div class="text-center stat-card">
             <p class="text-5xl font-bold">10+</p>
             <p class="text-lg opacity-90">Years of Excellence</p>
           </div>
-          <div class="text-center">
+          <div class="text-center stat-card">
             <p class="text-5xl font-bold">500+</p>
             <p class="text-lg opacity-90">Happy Clients</p>
           </div>
-          <div class="text-center">
+          <div class="text-center stat-card">
             <p class="text-5xl font-bold">50+</p>
             <p class="text-lg opacity-90">Premium Brands</p>
           </div>
@@ -45,7 +44,7 @@
 
     <!-- Our Story -->
     <section class="py-20 px-6 bg-white">
-      <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+      <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center fade-up">
         <div>
           <h2 class="text-4xl font-bold text-gray-800 mb-6">Our Story</h2>
           <p class="text-lg text-gray-700 leading-relaxed mb-6">
@@ -61,7 +60,8 @@
             known for honesty, quality, and exceptional customer care.
           </p>
         </div>
-        <div class="rounded-2xl overflow-hidden shadow-2xl">
+
+        <div class="rounded-2xl overflow-hidden shadow-2xl pop-card">
           <img src="" alt="RideZone Team" class="w-full h-full object-cover">
         </div>
       </div>
@@ -71,7 +71,7 @@
     <section class="py-20 bg-gray-100">
       <div class="max-w-6xl mx-auto px-6">
         <div class="grid md:grid-cols-2 gap-12">
-          <div class="bg-white p-10 rounded-3xl shadow-xl border border-gray-200">
+          <div class="bg-white p-10 rounded-3xl shadow-xl border border-gray-200 pop-card">
             <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-6">
               <i class="fas fa-bullseye text-3xl text-white"></i>
             </div>
@@ -82,7 +82,7 @@
             </p>
           </div>
 
-          <div class="bg-white p-10 rounded-3xl shadow-xl border border-gray-200">
+          <div class="bg-white p-10 rounded-3xl shadow-xl border border-gray-200 pop-card">
             <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-6">
               <i class="fas fa-eye text-3xl text-white"></i>
             </div>
@@ -105,19 +105,19 @@
         </p>
 
         <div class="grid md:grid-cols-3 gap-10">
-          <div class="bg-gradient-to-br from-red-50 to-red-100 p-8 rounded-2xl border-2 border-red-200">
+          <div class="p-8 rounded-2xl border-2 bg-gradient-to-br from-red-50 to-red-100 border-red-200 pop-card">
             <i class="fas fa-shield-alt text-5xl text-red-600 mb-6"></i>
             <h4 class="text-2xl font-bold text-gray-800 mb-4">100% Verified Cars</h4>
             <p class="text-gray-700">Every vehicle is thoroughly inspected and comes with complete documentation.</p>
           </div>
 
-          <div class="bg-gradient-to-br from-emerald-50 to-green-100 p-8 rounded-2xl border-2 border-emerald-200">
+          <div class="p-8 rounded-2xl border-2 bg-gradient-to-br from-emerald-50 to-green-100 border-emerald-200 pop-card">
             <i class="fas fa-handshake text-5xl text-emerald-600 mb-6"></i>
             <h4 class="text-2xl font-bold text-gray-800 mb-4">No Hidden Fees</h4>
             <p class="text-gray-700">Transparent pricing. What you see is what you pay — no surprises.</p>
           </div>
 
-          <div class="bg-gradient-to-br from-blue-50 to-indigo-100 p-8 rounded-2xl border-2 border-blue-200">
+          <div class="p-8 rounded-2xl border-2 bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200 pop-card">
             <i class="fas fa-headset text-5xl text-blue-600 mb-6"></i>
             <h4 class="text-2xl font-bold text-gray-800 mb-4">Lifetime Support</h4>
             <p class="text-gray-700">We’re with you before, during, and long after your purchase.</p>
@@ -128,14 +128,19 @@
 
     <!-- CTA -->
     <section class="py-20 bg-gradient-to-r from-red-600 to-red-800 text-white text-center">
-      <div class="max-w-4xl mx-auto px-6">
+      <div class="max-w-4xl mx-auto px-6 fade-up">
         <h2 class="text-4xl md:text-5xl font-bold mb-6">Ready to Find Your Dream Car?</h2>
         <p class="text-xl mb-10 opacity-90">Explore our premium collection today.</p>
-        <router-link to="/cars-page" class="inline-block px-12 py-5 bg-white text-red-600 font-bold text-xl rounded-full hover:bg-gray-100 transition shadow-xl">
+
+        <router-link 
+          to="/cars-page" 
+          class="inline-block px-12 py-5 bg-white text-red-600 font-bold text-xl rounded-full transition shadow-xl cta-pop"
+        >
           Browse Cars Now
         </router-link>
       </div>
     </section>
+
     <FooterSection />
   </div>
 </template>
@@ -144,18 +149,59 @@
 import { onMounted } from 'vue'
 import FooterSection from './FooterSection.vue'
 
-
-// Optional: Add scroll animation
 onMounted(() => {
   document.title = "About Us - RideZone Premium Cars"
 })
 </script>
 
 <style scoped>
-/* Optional: Add subtle parallax effect */
+
+/* -----------------------------------------------
+   GLOBAL POP-UP CARD HOVER ANIMATION
+------------------------------------------------ */
+.pop-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.pop-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+}
+
+/* Stats pop animation */
+.stat-card {
+  transition: transform 0.25s ease, text-shadow 0.25s ease;
+}
+.stat-card:hover {
+  transform: scale(1.1);
+}
+
+/* CTA button pop animation */
+.cta-pop {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.cta-pop:hover {
+  transform: scale(1.06);
+  box-shadow: 0 12px 26px rgba(255,255,255,0.35);
+  background: #f3f3f3;
+}
+
+/* Fade-up animation for sections */
+.fade-up {
+  animation: fadeUp 0.8s ease both;
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Parallax */
 section {
   background-attachment: fixed;
-  background-position: center;
-  background-size: cover;
 }
 </style>

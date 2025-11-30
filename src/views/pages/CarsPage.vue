@@ -424,4 +424,48 @@ onMounted(() => {
 
 <style scoped>
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* -------------------------------------------
+   BUTTON POP-UP HOVER ANIMATION
+------------------------------------------- */
+button {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+button:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+button:active {
+  transform: scale(0.97);
+}
+
+/* -------------------------------------------
+   DROPDOWN ANIMATION
+------------------------------------------- */
+select {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+select:focus {
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.25);
+}
+select option {
+  transition: opacity 0.25s ease-in-out;
+}
+select:focus option {
+  opacity: 1;
+}
+
+/* -------------------------------------------
+   CARD HOVER ANIMATION
+------------------------------------------- */
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
+}
+
 </style>
+
