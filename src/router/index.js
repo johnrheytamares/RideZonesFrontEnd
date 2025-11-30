@@ -20,6 +20,7 @@ import About from '../views/pages/About.vue'
 import ForgotPassword from '../components/Auth/ForgotPassword.vue'
 import ResetPassword from '../components/Auth/ResetPassword.vue'
 import Feedback from '../views/GoogleForm.vue'  // ← IDAGDAG MO KUNG MERON
+import AppointmentModal from '../views/pages/AppointmentModal.vue'
 
 const routes = [
   // ===================== PUBLIC PAGES (LAHAT PWEDE) =====================
@@ -34,10 +35,8 @@ const routes = [
   { path: '/about',             name: 'about',          component: About,                  meta: { public: true } },
   { path: '/contact',           name: 'contact',        component: ContactPage,            meta: { public: true } },
   { path: '/google-form',       name: 'google-form',    component: Feedback,               meta: { public: true } },
-
+  { path: '/appointmentpage',   name: 'appointmentpage', component: AppointmentModal,      meta: { public: true } },
   // ===================== PROTECTED PAGES =====================
-  // Buyer lang (kailangan mag-login)
-  { path: '/appointmentpage',   name: 'appointmentpage', component: UserAppointmentPage,   meta: { requiresAuth: true } },
 
   // Dealer & Admin lang
   { 
@@ -52,6 +51,13 @@ const routes = [
     component: CarsManagement, 
     meta: { requiresAuth: true, roles: ['dealer', 'admin'] } 
   },
+    { 
+    ath: '/user-management',   
+    name: 'user-management', 
+    component: UserAppointmentPage, 
+    meta: { requiresAuth: true, roles: ['dealer', 'admin'] } 
+  },
+
   { 
     path: '/appointments',      
     name: 'appointments', 

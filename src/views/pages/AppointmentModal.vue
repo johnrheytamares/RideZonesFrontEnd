@@ -77,7 +77,7 @@
             <div class="md:mt-12 flex flex-col sm:flex-row gap-3 pt-4">
               <button @click="createAppointment" :disabled="isBookButtonDisabled"
                 class="order-1 sm:order-2 flex-1 py-3.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-lg flex items-center justify-center gap-2">
-                <span v-if="loading" class="animate-spin">Loading</span>
+                <span v-if="loading" class="animate-spin">🛞</span>
                 {{ loading ? 'Booking...' : 'Confirm Booking' }}
               </button>
             </div>

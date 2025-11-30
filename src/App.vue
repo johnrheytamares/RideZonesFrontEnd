@@ -1,8 +1,8 @@
 <template>
   <div id="app" :class="theme">
-    <!-- AUTOMATIC SIDEBAR LOGIC — WALANG MANUAL NA LISTAHAN! -->
+    <!-- SIDEBAR: LILITAW LANG KAPAG MAY AUTHENTICATED USER TALAGA -->
     <Sidebar
-      v-if="shouldShowSidebar"
+      v-if="isAuthenticated && user"
       :theme="theme"
       :currentPage="$route.name"
       @toggle-theme="toggleTheme"
@@ -11,55 +11,51 @@
     <!-- MAIN CONTENT -->
     <div
       class="main-content"
-      :class="{ 'full-width': !shouldShowSidebar }"
+      :class="{ 'full-width': !isAuthenticated || !user }"
     >
-      <router-view :theme="theme" />
+      <!-- HINTAYIN MATAPOS ANG AUTH BAGO MAG-RENDER NG ANUMAN -->
+      <div v-if="authReady">
+        <router-view :theme="theme" />
+      </div>
+      <div v-else class="loading-screen">
+        <div class="loader"></div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuth } from './composables/useAuth'  // ← GAMITIN MO NA ANG @ ALIAS
 import Sidebar from './views/Sidebars.vue'
 
 const route = useRoute()
+const { user, isAuthenticated, loading, waitForAuth } = useAuth()
 
-// Theme logic
+// === AUTH STATE ===
+const authReady = ref(false)
+
+onMounted(async () => {
+  await waitForAuth()     // ← TAMA NA ‘TO! NASA LOOB NG async function
+  authReady.value = true  // ← NGAYON LANG MAGRE-RENDER ANG LAHAT
+})
+
+// === THEME ===
 const theme = ref('dark')
 
 const toggleTheme = () => {
   theme.value = theme.value === 'dark' ? 'light' : 'dark'
   document.documentElement.setAttribute('data-theme', theme.value)
-  localStorage.setItem('ridezone-theme', theme.value) // optional: save preference
+  localStorage.setItem('ridezone-theme', theme.value)
 }
 
-// Load saved theme
 onMounted(() => {
   const saved = localStorage.getItem('ridezone-theme')
   if (saved) {
     theme.value = saved
     document.documentElement.setAttribute('data-theme', theme.value)
   }
-})
-
-// AUTOMATIC: HIDE SIDEBAR SA MGA PUBLIC PAGES LANG
-const shouldShowSidebar = computed(() => {
-  const publicRoutes = [
-    'login',
-    'registration',
-    'forgot-password',
-    'reset-password',
-    'home',
-    'cars-page',
-    'car-comparison',
-    'dealers',
-    'about',
-    'contact',
-    'google-form'
-  ]
-
-  return !publicRoutes.includes(route.name)
 })
 </script>
 
@@ -84,16 +80,33 @@ const shouldShowSidebar = computed(() => {
   width: 100%;
 }
 
-/* Responsive */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.loader {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border-primary);
+  border-top: 4px solid var(--text-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 1200px) {
-  .main-content {
-    margin-left: 0;
-    padding-top: 70px;
-  }
+  .main-content { margin-left: 0; padding-top: 70px; }
 }
 </style>
 
-<!-- GLOBAL STYLES (ILAGAY MO SA App.vue O SA SEPARATE FILE) -->
+<!-- GLOBAL STYLES MO — SAME LANG, PERO MAS CLEAN NA -->
 <style>
 :root {
   --bg-primary: #0a0a0a;
@@ -116,16 +129,8 @@ const shouldShowSidebar = computed(() => {
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+body, html, #app { width: 100%; height: 100%; font-family: 'Poppins', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
 
-body, html, #app {
-  width: 100%;
-  height: 100%;
-  font-family: 'Poppins', sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-/* Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-secondary); }
 ::-webkit-scrollbar-thumb { background: var(--text-accent); border-radius: 4px; }
