@@ -185,7 +185,7 @@ h2 {
 .car-card {
   min-width: 300px;
   max-width: 300px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.842);
   backdrop-filter: blur(8px);
   padding: 1.2rem;
   border-radius: 14px;
@@ -215,14 +215,14 @@ h2 {
 
 .info h3 {
   margin: 0.8rem 0 0.4rem;
-  color: #fff;
+  color: #353535;
   font-size: 1.25rem;
   font-weight: 600;
 }
 
 .year {
   font-size: 0.9rem;
-  color: #ddd;
+  color: #000000;
   margin-bottom: 0.5rem;
 }
 
@@ -244,8 +244,8 @@ h2 {
 }
 
 .status.available {
-  background: #00ff41;
-  color: #000;
+  background: #58b401;
+  color: #000000d5;
 }
 
 .status:not(.available) {
