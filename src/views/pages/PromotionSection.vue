@@ -30,7 +30,7 @@
                     @click="reserveCar(car)"
                     :disabled="car.status !== 'available'"
                   >
-                    {{ car.status === 'available' ? 'Schedule Viewing' : 'Reserved' }}
+                    {{ car.status === 'available' ? 'View' : 'Reserved' }}
                   </button>
                 </div>
 
@@ -111,7 +111,7 @@ const go = (i) => currentIndex.value = i
 
 const reserveCar = (car) => {
   if (car.status === 'available') {
-    router.push(`/appointmentpage?car=${car.id}`)
+    router.push(`/cars-page`)
   }
 }
 
