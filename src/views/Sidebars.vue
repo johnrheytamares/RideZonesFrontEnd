@@ -1,9 +1,10 @@
 <template>
-  <aside class="sidebar" :class="theme">
+  <aside class="sidebar" :class="theme" v-if="isAuthenticated && user">
+    <!-- SAME DESIGN MO — PERO MAY v-if NA TALAGA! -->
     <div class="sidebar-header">
       <div class="logo">
         <div class="logo-icon">
-          <i class="fas fa-car"></i>
+          <i class="fas fa-crown"></i>
         </div>
         <span class="logo-text">RideZone</span>
       </div>
@@ -14,47 +15,45 @@
       <div class="nav-section">
         <h3 class="nav-section-title">MAIN</h3>
         <ul class="nav-links">
-          <!-- Dashboard -->
           <li
             class="nav-item"
-            :class="{ active: $route.name === 'dashboards' }"
-            @click="navigate('dashboards')"
+            :class="{ active: $route.name === 'dashboard' }"
+            @click="navigate('dashboard')"
           >
             <i class="fas fa-home"></i>
             <span>Dashboard</span>
-            <div v-if="$route.name === 'dashboards'" class="active-indicator"></div>
+            <div v-if="$route.name === 'dashboard'" class="active-indicator"></div>
           </li>
 
-          <!-- Vehicle Inventory & Dealers - Admin Only -->
-          <template v-if="!isDealer">
+          <!-- ADMIN ONLY: Vehicle Inventory & Dealers -->
+          <template v-if="isAdmin">
             <li
               class="nav-item"
-              :class="{ active: $route.name === 'car-inventorys' }"
-              @click="navigate('car-inventorys')"
+              :class="{ active: $route.name === 'car-inventory' }"
+              @click="navigate('car-inventory')"
             >
               <i class="fas fa-car"></i>
               <span>Vehicle Inventory</span>
-              <div v-if="$route.name === 'car-inventorys'" class="active-indicator"></div>
+              <div v-if="$route.name === 'car-inventory'" class="active-indicator"></div>
             </li>
 
             <li
               class="nav-item"
-              :class="{ active: $route.name === 'dealer' }"
-              @click="navigate('dealer')"
+              :class="{ active: $route.name === 'dealers' }"
+              @click="navigate('dealers')"
             >
               <i class="fas fa-store"></i>
               <span>Dealers</span>
-              <div v-if="$route.name === 'dealer'" class="active-indicator"></div>
+              <div v-if="$route.name === 'dealers'" class="active-indicator"></div>
             </li>
           </template>
         </ul>
       </div>
 
-      <!-- MANAGEMENT SECTION -->
+      <!-- MANAGEMENT -->
       <div class="nav-section">
         <h3 class="nav-section-title">MANAGEMENT</h3>
         <ul class="nav-links">
-          <!-- Appointments -->
           <li
             class="nav-item"
             :class="{ active: $route.name === 'adminappointment' }"
@@ -66,7 +65,6 @@
             <div v-if="$route.name === 'adminappointment'" class="active-indicator"></div>
           </li>
 
-          <!-- Cars Management -->
           <li
             class="nav-item"
             :class="{ active: $route.name === 'cars-management' }"
@@ -77,9 +75,8 @@
             <div v-if="$route.name === 'cars-management'" class="active-indicator"></div>
           </li>
 
-          <!-- User Management - Admin Only -->
           <li
-            v-if="!isDealer"
+            v-if="isAdmin"
             class="nav-item"
             :class="{ active: $route.name === 'user-management' }"
             @click="navigate('user-management')"
@@ -92,119 +89,80 @@
       </div>
     </nav>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <div class="sidebar-footer">
       <div class="user-profile">
         <div class="avatar">
           <i class="fas fa-user"></i>
         </div>
         <div class="user-info">
-          <span class="user-name">{{ userName }}</span>
-          <span class="user-role">{{ userRole }}</span>
+          <span class="user-name">{{ user.name || 'User' }}</span>
+          <span class="user-role">{{ user.role }}</span>
         </div>
       </div>
-      <div class="footer-actions">
-        <button @click="logout" class="logout-btn" title="Logout">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
+      <button @click="logout" class="logout-btn" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
     </div>
   </aside>
 </template>
 
-<script>
-export default {
-  name: "Sidebar",
-  props: {
-    theme: { type: String, default: "dark" }
-  },
-  emits: ["toggle-theme"],
-  data() {
-    return {
-      pendingCount: 0,
-      user: null
+<script setup>
+import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+
+const { user, isAuthenticated, logout, refresh } = useAuth()
+const router = useRouter()
+
+const isAdmin = computed(() => user.value?.role === 'admin')
+const pendingCount = ref(0)
+
+const navigate = (name) => {
+  router.push({ name }).catch(() => {})
+}
+
+const fetchPendingAppointments = async () => {
+  if (!isAuthenticated.value) return
+
+  try {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment', {
+      credentials: 'include'
+    })
+    const data = await res.json()
+
+    if (data.status === 'success' && Array.isArray(data.appointments)) {
+      pendingCount.value = data.appointments.filter(a => a.status === 'pending').length
     }
-  },
-  computed: {
-    isDealer() {
-      return this.user?.role === 'dealer'
-    },
-    userName() {
-      return this.user?.name || 'User'
-    },
-    userRole() {
-      return this.user?.role === 'admin' ? 'admin' : 'dealer'
-    }
-  },
-  methods: {
-    navigate(routeName) {
-      this.$router.push({ name: routeName }).catch(() => {})
-    },
-
-    // FIXED, BULLETPROOF, WITH X-User HEADER & CORRECT ENDPOINT!
-    async fetchPendingAppointments() {
-      try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}')
-
-        const res = await fetch("https://ridezonesbackends-dzei.onrender.com/listappointment", { 
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User': JSON.stringify(user)  // SECURED NA TALAGA!
-          }
-        })
-
-        const data = await res.json()
-
-        if (data.status === 'success' && Array.isArray(data.appointments)) {
-          this.pendingCount = data.appointments
-            .filter(a => a.status === 'pending').length
-        } else {
-          this.pendingCount = 0
-        }
-      } catch (err) {
-        console.error("Failed to fetch pending appointments:", err)
-        this.pendingCount = 0
-      }
-    },
-
-    logout() {
-      localStorage.removeItem("user")
-      this.user = null
-      this.pendingCount = 0
-      this.$router.push({ name: "login" })
-    }
-  },
-
-  mounted() {
-    // Load user
-    const stored = localStorage.getItem("user")
-    if (stored) {
-      this.user = JSON.parse(stored)
-    }
-
-    // Auto-update when login/logout
-    const updateUser = () => {
-      const updated = localStorage.getItem("user")
-      this.user = updated ? JSON.parse(updated) : null
-      this.fetchPendingAppointments()
-    }
-
-    window.addEventListener("userLoggedIn", updateUser)
-    window.addEventListener("userLoggedOut", updateUser)
-
-    // Initial fetch
-    this.fetchPendingAppointments()
-
-    // Real-time badge update
-    window.addEventListener("updateSidebarBadge", this.fetchPendingAppointments)
-  },
-
-  unmounted() {
-    window.removeEventListener("updateSidebarBadge", this.fetchPendingAppointments)
-    window.removeEventListener("userLoggedIn", () => {})
-    window.removeEventListener("userLoggedOut", () => {})
+  } catch (err) {
+    console.error('Failed to fetch appointments:', err)
   }
 }
+
+// Real-time update kapag nagbago ang user
+watch(isAuthenticated, (newVal) => {
+  if (newVal) fetchPendingAppointments()
+}, { immediate: true })
+
+// Update badge kapag may bagong appointment
+const handleBadgeUpdate = () => fetchPendingAppointments()
+onMounted(() => {
+  window.addEventListener('updateSidebarBadge', handleBadgeUpdate)
+  fetchPendingAppointments()
+})
+onUnmounted(() => {
+  window.removeEventListener('updateSidebarBadge', handleBadgeUpdate)
+})
+
+// Logout
+const handleLogout = async () => {
+  await logout()
+  router.push('/login')
+}
+
+defineProps({
+  theme: { type: String, default: 'dark' }
+})
 </script>
 
 <style scoped>
