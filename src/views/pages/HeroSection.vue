@@ -52,7 +52,7 @@ const searchQuery = ref("");
 .overlay {
   width: 100%;
   height: 100%;
-  background: rgba(185, 183, 183, 0.55);
+  background: rgba(185, 183, 183, 0.625);
   display: flex;
   align-items: center;
   justify-content: center;
