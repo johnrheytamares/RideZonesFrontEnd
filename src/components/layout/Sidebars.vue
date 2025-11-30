@@ -26,13 +26,13 @@
           </li>
 
           <!-- Vehicle Inventory & Dealers - Admin Only -->
-          <template v-if="!isDealer">
+          <template v-if="user?.role === 'admin'">
             <li
               class="nav-item"
               :class="{ active: $route.name === 'car-inventorys' }"
               @click="navigate('car-inventorys')"
             >
-              <i class="fas fa-car"></i>
+              <i class="fas fa-warehouse"></i>
               <span>Vehicle Inventory</span>
               <div v-if="$route.name === 'car-inventorys'" class="active-indicator"></div>
             </li>
@@ -54,19 +54,17 @@
       <div class="nav-section">
         <h3 class="nav-section-title">MANAGEMENT</h3>
         <ul class="nav-links">
-          <!-- Appointments -->
           <li
             class="nav-item"
-            :class="{ active: $route.name === 'adminappointment' }"
-            @click="navigate('adminappointment')"
+            :class="{ active: $route.name === 'appointments' || $route.name === 'adminappointment' }"
+            @click="navigate(user?.role === 'admin' ? 'adminappointment' : 'appointments')"
           >
             <i class="fas fa-calendar-check"></i>
             <span>Appointments</span>
             <span class="badge" v-if="pendingCount > 0">{{ pendingCount }}</span>
-            <div v-if="$route.name === 'adminappointment'" class="active-indicator"></div>
+            <div v-if="$route.name === 'appointments' || $route.name === 'adminappointment'" class="active-indicator"></div>
           </li>
 
-          <!-- Cars Management -->
           <li
             class="nav-item"
             :class="{ active: $route.name === 'cars-management' }"
@@ -77,9 +75,9 @@
             <div v-if="$route.name === 'cars-management'" class="active-indicator"></div>
           </li>
 
-          <!-- User Management - Admin Only -->
+          <!-- ADMIN ONLY: User Management -->
           <li
-            v-if="!isDealer"
+            v-if="user?.role === 'admin'"
             class="nav-item"
             :class="{ active: $route.name === 'user-management' }"
             @click="navigate('user-management')"
@@ -99,110 +97,75 @@
           <i class="fas fa-user"></i>
         </div>
         <div class="user-info">
-          <span class="user-name">{{ userName }}</span>
-          <span class="user-role">{{ userRole }}</span>
+          <span class="user-name">{{ user?.name || 'Guest' }}</span>
+          <span class="user-role">{{ user?.role || 'unknown' }}</span>
         </div>
       </div>
-      <div class="footer-actions">
-        <button @click="logout" class="logout-btn" title="Logout">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
+      <button @click="logout" class="logout-btn" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
     </div>
   </aside>
 </template>
 
-<script>
-export default {
-  name: "Sidebar",
-  props: {
-    theme: { type: String, default: "dark" }
-  },
-  emits: ["toggle-theme"],
-  data() {
-    return {
-      pendingCount: 0,
-      user: null
+<script setup>
+import { useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+import { ref, watch, onMounted } from 'vue'
+
+const router = useRouter()
+const { user, refresh } = useAuth()
+
+const pendingCount = ref(0)
+const props = defineProps({
+  theme: { type: String, default: 'dark' }
+})
+
+// Navigate safely
+const navigate = (name) => {
+  router.push({ name }).catch(() => {})
+}
+
+// Fetch pending appointments (session-based, no headers needed!)
+const fetchPendingAppointments = async () => {
+  if (!user.value) return
+
+  try {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listAppointments', {
+      credentials: 'include'
+    })
+    const data = await res.json()
+
+    if (data.status === 'success' && Array.isArray(data.appointments)) {
+      pendingCount.value = data.appointments.filter(a => a.status === 'pending').length
     }
-  },
-  computed: {
-    isDealer() {
-      return this.user?.role === 'dealer'
-    },
-    userName() {
-      return this.user?.name || 'User'
-    },
-    userRole() {
-      return this.user?.role === 'admin' ? 'admin' : 'dealer'
-    }
-  },
-  methods: {
-    navigate(routeName) {
-      this.$router.push({ name: routeName }).catch(() => {})
-    },
+  } catch (err) {
+    console.warn('Failed to fetch appointments count')
+  }
+}
 
-    // FIXED, BULLETPROOF, WITH X-User HEADER & CORRECT ENDPOINT!
-    async fetchPendingAppointments() {
-      try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}')
+// Real-time update when user changes
+watch(user, () => {
+  fetchPendingAppointments()
+}, { immediate: true })
 
-        const res = await fetch("https://ridezonesbackends-dzei.onrender.com/listappointment", {  // MAY "s" NA!
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User': JSON.stringify(user)  // SECURED NA TALAGA!
-          }
-        })
+// Initial load
+onMounted(() => {
+  fetchPendingAppointments()
+})
 
-        const data = await res.json()
-
-        if (data.status === 'success' && Array.isArray(data.appointments)) {
-          this.pendingCount = data.appointments
-            .filter(a => a.status === 'pending').length
-        } else {
-          this.pendingCount = 0
-        }
-      } catch (err) {
-        console.error("Failed to fetch pending appointments:", err)
-        this.pendingCount = 0
-      }
-    },
-
-    logout() {
-      localStorage.removeItem("user")
-      this.user = null
-      this.pendingCount = 0
-      this.$router.push({ name: "login" })
-    }
-  },
-
-  mounted() {
-    // Load user
-    const stored = localStorage.getItem("user")
-    if (stored) {
-      this.user = JSON.parse(stored)
-    }
-
-    // Auto-update when login/logout
-    const updateUser = () => {
-      const updated = localStorage.getItem("user")
-      this.user = updated ? JSON.parse(updated) : null
-      this.fetchPendingAppointments()
-    }
-
-    window.addEventListener("userLoggedIn", updateUser)
-    window.addEventListener("userLoggedOut", updateUser)
-
-    // Initial fetch
-    this.fetchPendingAppointments()
-
-    // Real-time badge update
-    window.addEventListener("updateSidebarBadge", this.fetchPendingAppointments)
-  },
-
-  unmounted() {
-    window.removeEventListener("updateSidebarBadge", this.fetchPendingAppointments)
-    window.removeEventListener("userLoggedIn", () => {})
-    window.removeEventListener("userLoggedOut", () => {})
+// LOGOUT — 100% WORKING, SESSION-BASED, NO LOCALSTORAGE!
+const logout = async () => {
+  try {
+    await fetch('https://ridezonesbackends-dzei.onrender.com/logout', {
+      method: 'POST',
+      credentials: 'include'
+    })
+  } catch (err) {
+    console.warn('Logout request failed, but clearing anyway')
+  } finally {
+    await refresh()  // ← Magiging null ang user sa buong app
+    router.push('/login')
   }
 }
 </script>

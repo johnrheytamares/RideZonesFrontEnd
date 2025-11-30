@@ -150,144 +150,136 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'  // ← IMPORTANT: Gumawa ka nito
 import ForgotPasswordModal from './ForgotPassword.vue'
-export default {
-  name: 'LoginComponent',
-  components: {
-    ForgotPasswordModal
-  },
-  data() {
-    return {
-      email: '',
-      password: '',
-      rememberMe: false,
-      showPassword: false,
-      other: false,
-      errorMessage: '',
-      successMessage: '',
-      isLoading: false,
-      openForgotModal: false,
-    }
-  },
 
-  mounted() {
-    this.loadGoogleSignIn()
-  },
+const router = useRouter()
+const { refresh } = useAuth()  // ← Ito ang magre-refresh ng user sa buong app
 
-  methods: {
-    // ==================== GOOGLE SIGN-IN ====================
-    loadGoogleSignIn() {
-      if (window.google?.accounts?.id) {
-        this.renderGoogleButton()
-        return
-      }
+const email = ref('')
+const password = ref('')
+const showPassword = ref(false)
+const rememberMe = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
+const openForgotModal = ref(false)
 
-      const script = document.createElement('script')
-      script.src = 'https://accounts.google.com/gsi/client'
-      script.async = true
-      script.defer = true
-      script.onload = () => this.renderGoogleButton()
-      document.head.appendChild(script)
-    },
+// ==================== EMAIL/PASSWORD LOGIN ====================
+const handleLogin = async () => {
+  if (!email.value || !password.value) {
+    errorMessage.value = 'Please fill in all fields'
+    return
+  }
 
-    renderGoogleButton() {
-      window.google.accounts.id.initialize({
-        client_id: '1084979266133-d1bvpmpb5devqn5cl0pscuv9k01l9p9t.apps.googleusercontent.com',
-        callback: (response) => this.processGoogleLogin(response.credential)
+  isLoading.value = true
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  try {
+    const response = await fetch('https://ridezonesbackends-dzei.onrender.com/login', {
+      method: 'POST',
+      credentials: 'include',  // ← CRITICAL: para ma-save ang session
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        email: email.value, 
+        password: password.value 
       })
+    })
 
-      window.google.accounts.id.renderButton(
-        document.getElementById('g_id_signin'),
-        {
-          theme: 'outline',
-          size: 'large',
-          width: 350,
-          text: 'signin_with',
-          shape: 'rectangular',
-          logo_alignment: 'left'
-        }
-      )
-    },
+    const data = await response.json()
 
-    async processGoogleLogin(token) {
-      this.isLoading = true
-      try {
-        const res = await fetch('https://ridezonesbackends-dzei.onrender.com/auth/google', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ credential: token })
-        })
-
-        const data = await res.json()
-        if (data.success) {
-          localStorage.setItem('user', JSON.stringify(data.user))
-          localStorage.setItem('logged_in', 'true')
-          window.dispatchEvent(new CustomEvent('user-logged-in', { detail: data.user }))
-          this.$router.push('/dashboard')
-        } else {
-          this.errorMessage = data.error || 'Google login failed'
-        }
-      } catch (err) {
-        localStorage.setItem('user', JSON.stringify({ id: '102223962773718581395', email: 'johnrheynedamotamares2005@gmail.com', role: 'admin', name: 'John Rhey' }))
-        localStorage.setItem('logged_in', 'true')
-        window.dispatchEvent(new CustomEvent('user-logged-in', { detail: { email: 'johnrheynedamotamares2005@gmail.com', role: 'admin' } }))
-        this.$router.push('/dashboard')
-      } finally {
-        this.isLoading = false
-      }
-    },
-
-    // ==================== EMAIL/PASSWORD LOGIN ====================
-    async handleLogin() {
-      if (!this.email || !this.password) {
-        this.errorMessage = 'Please fill in all fields'
-        return
-      }
-
-      this.isLoading = true
-      this.errorMessage = ''
-      this.successMessage = ''
-
-      try {
-        const response = await fetch('https://ridezonesbackends-dzei.onrender.com/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ email: this.email, password: this.password })
-        })
-
-        const data = await response.json()
-
-      if (response.ok && data.status === 'success') {
+    if (response.ok && data.status === 'success') {
       const user = data.user
 
-      // BLOCK BUYER — ADMIN & DEALER LANG PWEDENG MAG-LOGIN
+      // BLOCK BUYER — ADMIN & DEALER LANG
       if (!['admin', 'dealer'].includes(user.role)) {
-        this.errorMessage = 'Access Denied: Only Admin and Dealer accounts can log in here.'
-        this.isLoading = false
+        errorMessage.value = 'Access Denied: Only Admin and Dealer accounts can log in here.'
+        isLoading.value = false
         return
       }
 
-      // SAFE NA — ADMIN O DEALER
-      localStorage.setItem('user', JSON.stringify(user))
-      localStorage.setItem('logged_in', 'true')
-      window.dispatchEvent(new CustomEvent('user-logged-in', { detail: user }))
+      // SUCCESS — I-refresh ang global user state
+      await refresh()  // ← DITO NA NAG-A-UPDATE ANG BUONG APP!
 
-      this.successMessage = 'Welcome back, ' + (user.name || user.role) + '!'
-      setTimeout(() => this.$router.push('/dashboard'), 1000)
+      successMessage.value = `Welcome back, ${user.name || user.role}!`
+      
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 800)
+
     } else {
-          this.errorMessage = data.message || 'Invalid email/username or password'
-        }
-      } catch (err) {
-        console.error(err)
-        this.errorMessage = 'Server not responding. Check if backend is running.'
-      } finally {
-        this.isLoading = false
-      }
+      errorMessage.value = data.message || 'Invalid email or password'
     }
+  } catch (err) {
+    errorMessage.value = 'Server not responding. Please try again later.'
+    console.error(err)
+  } finally {
+    isLoading.value = false
   }
 }
+
+// ==================== GOOGLE LOGIN ====================
+const processGoogleLogin = async (token) => {
+  isLoading.value = true
+  try {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/googleCallback', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: token })
+    })
+
+    const data = await res.json()
+
+    if (data.success) {
+      await refresh()  // ← SAME: i-refresh ang user sa buong app
+      router.push('/dashboard')
+    } else {
+      errorMessage.value = data.error || 'Google login failed'
+    }
+  } catch (err) {
+    // TEMP DEV BYPASS (tanggalin mo ‘to pag live na!)
+    await refresh()
+    router.push('/dashboard')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Google Sign-In (mounted)
+const loadGoogleSignIn = () => {
+  if (window.google?.accounts?.id) {
+    renderGoogleButton()
+    return
+  }
+
+  const script = document.createElement('script')
+  script.src = 'https://accounts.google.com/gsi/client'
+  script.async = true
+  script.defer = true
+  script.onload = renderGoogleButton
+  document.head.appendChild(script)
+}
+
+const renderGoogleButton = () => {
+  window.google.accounts.id.initialize({
+    client_id: '1084979266133-d1bvpmpb5devqn5cl0pscuv9k01l9p9t.apps.googleusercontent.com',
+    callback: (response) => processGoogleLogin(response.credential)
+  })
+
+  window.google.accounts.id.renderButton(
+    document.getElementById('g_id_signin'),
+    { theme: 'outline', size: 'large', width: 350 }
+  )
+}
+
+onMounted(() => {
+  loadGoogleSignIn()
+})
 </script>
 
 <style scoped>

@@ -1,45 +1,48 @@
+<!-- App.vue -->
 <template>
   <div id="app" :class="theme">
-    <Sidebar
-      v-if="!['login', 'registration', 'cars-page', 'appointmentpage', 'car-inventory', 'dealers', 'car-comparison', 'featured-cars', 'cta-section', 'footer-section', 'hello-world', 'hero-section', 'promotion-section', 'services-section', 'testimonials-section', 'the-welcome', 'welcome-item', 'home', 'contact', 'google-form', 'about', 'forgot-password', 'reset-password'].includes($route.name)"
+    <!-- Sidebar: Only show if logged in AND has role (dealer/admin) -->
+    <Sidebar 
+      v-if="user && user.role !== 'buyer' && !isPublicRoute"
       :theme="theme"
       :currentPage="$route.name"
       @toggle-theme="toggleTheme"
     />
 
-    <div
-      class="main-content"
-      :class="{ 'full-width': ['login', 'registration', 'cars-page', 'car-comparison', 'featured-cars', 'cta-section', 'footer-section', 'hello-world', 'hero-section', 'promotion-section', 'services-section', 'testimonials-section', 'the-welcome', 'welcome-item', 'home', 'contact', 'google-form', 'about', 'forgot-password', 'reset-password'].includes($route.name) }"
+    <div 
+      class="main-content" 
+      :class="{ 'full-width': !user || isPublicRoute || user.role === 'buyer' }"
     >
-      <router-view :theme="theme" />
+      <router-view :theme="theme" :key="$route.fullPath" />
     </div>
-
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+import Sidebar from './views/Sidebars.vue'
 
-import { ref } from 'vue'
-import Sidebar from './views/Sidebars.vue' 
+const { user, loading } = useAuth()
+const route = useRoute()
 
-export default {
-  name: 'App',
-  components: { Sidebar },
-  setup() {
-    const theme = ref('dark')
-
-    const toggleTheme = () => {
-      theme.value = theme.value === 'dark' ? 'light' : 'dark'
-      document.documentElement.setAttribute('data-theme', theme.value)
-    }
-
-    return { theme, toggleTheme }
-  }
-
+const theme = ref('dark')
+const toggleTheme = () => {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark'
+  document.documentElement.setAttribute('data-theme', theme.value)
 }
+
+// Listahan ng public routes (hindi kailangan ng sidebar)
+const publicRoutes = [
+  'login', 'registration', 'home', 'cars-page', 'car-comparison',
+  'dealer', 'about', 'contact', 'forgot-password', 'reset-password'
+]
+
+const isPublicRoute = computed(() => {
+  return publicRoutes.includes(route.name)
+})
 </script>
-
-
 
 <style>
 :root {
