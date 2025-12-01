@@ -20,26 +20,26 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Full Name <span class="text-red-500">*</span></label>
               <input v-model="fullName" type="text" required placeholder="Juan Dela Cruz"
-                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
+                class="w-full border text-black border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Email Address <span class="text-red-500">*</span></label>
               <input v-model="email" type="email" required placeholder="juan@gmail.com"
-                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
+                class="w-full border border-gray-300 text-black rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
               <p class="text-xs text-gray-500 mt-1">Confirmation will be sent here</p>
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Phone <span class="text-gray-400 text-xs">(optional)</span></label>
               <input v-model="phone" type="tel" placeholder="0917 123 4567"
-                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
+                class="w-full border text-black border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Notes <span class="text-gray-400 text-xs">(optional)</span></label>
               <textarea v-model="notes" rows="3" placeholder="Ex: Call me 30 mins before"
-                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 resize-none"></textarea>
+                class="w-full border text-black border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 resize-none"></textarea>
             </div>
           </div>
 
@@ -50,7 +50,7 @@
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Date <span class="text-red-500">*</span></label>
               <input v-model="appointmentDate" type="date" :min="today" @change="onDateChange" required
-                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
+                class="w-full border text-black border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
               
               <p v-if="dateError" class="text-red-600 text-sm mt-2 flex items-center gap-1">
                 Warning: {{ dateError }}
@@ -64,7 +64,7 @@
               <label class="block text-sm font-semibold text-gray-700 mb-1.5">Time <span class="text-red-500">*</span></label>
               <input v-model="appointmentTime" type="time" required
                 :disabled="!appointmentDate || isDateFullyBooked || !!dateError"
-                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition">
+                class="w-full border text-black border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition">
             </div>
 
             <!-- Success Message -->
@@ -77,7 +77,7 @@
             <div class="md:mt-12 flex flex-col sm:flex-row gap-3 pt-4">
               <button @click="createAppointment" :disabled="isBookButtonDisabled"
                 class="order-1 sm:order-2 flex-1 py-3.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition shadow-lg flex items-center justify-center gap-2">
-                <span v-if="loading" class="animate-spin">Loading</span>
+                <span v-if="loading" class="animate-spin">🛞</span>
                 {{ loading ? 'Booking...' : 'Confirm Booking' }}
               </button>
             </div>
@@ -203,7 +203,7 @@ async function createAppointment() {
       success.value = true
       await fetchBookedDates()
       emit('saved')
-      setTimeout(() => $emit('close'), 3000) // Auto-close
+      setTimeout(() => emit('close'), 3000) // Auto-close
     } else {
       alert('Booking failed: ' + (data.error || data.message || 'Please try again.'))
     }

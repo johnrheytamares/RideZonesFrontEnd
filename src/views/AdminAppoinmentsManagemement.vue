@@ -101,11 +101,11 @@
               <label class="text-xs text-gray-400 mb-2 block">Status</label>
               <select v-model="selectedAppointment.status" :disabled="!selectedAppointment.id"
                       class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="rejected">Rejected</option>
+                <option class="text-black" value="pending">Pending</option>
+                <option class="text-black" value="approved">Approved</option>
+                <option class="text-black" value="completed">Completed</option>
+                <option class="text-black" value="cancelled">Cancelled</option>
+                <option class="text-black" value="rejected">Rejected</option>
               </select>
             </div>
             <div class="lg:col-span-3">
@@ -218,6 +218,7 @@ const selectedAppointment = ref({
 const pendingCount = computed(() => appointments.value.filter(a => a.status === 'pending').length)
 const approvedCount = computed(() => appointments.value.filter(a => ['approved','completed'].includes(a.status)).length)
 const cancelledCount = computed(() => appointments.value.filter(a => ['cancelled','rejected'].includes(a.status)).length)
+const currentDealerId = ref('Loading...')
 
 const carDisplay = computed(() => {
   const a = selectedAppointment.value
@@ -237,11 +238,38 @@ const appointmentDateTime = computed({
 const fetchAppointments = async () => {
   loading.value = true
   try {
+    const storedUser = localStorage.getItem('authUser')
+    const user = storedUser ? JSON.parse(storedUser) : null
+
+    console.log('Currently logged in as:', user)
+    currentDealerId.value = user?.role === 'dealer' ? user.dealer_id : 'Admin / All Dealers'
+
     const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment')
     const data = await res.json()
-    if (data.status === 'success') appointments.value = data.appointments || []
-  } catch (e) { console.error(e) }
-  finally { loading.value = false }
+
+    if (data.status === 'success' && data.appointments) {
+      let filtered = data.appointments
+
+      // ITO LANG ANG KULANG MO BRO!!!
+      if (user?.role === 'dealer' && user?.dealer_id) {
+        filtered = data.appointments.filter(apt => 
+          apt.dealer_id == user.dealer_id
+        )
+      }
+      // Kung admin → lahat talaga
+
+      appointments.value = filtered
+      console.log(`Showing ${appointments.value.length} appointment(s) →`, 
+        user.role === 'dealer' ? `Dealer ID: ${user.dealer_id}` : 'ALL (Admin)')
+    } else {
+      appointments.value = []
+    }
+  } catch (e) {
+    console.error(e)
+    appointments.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 const editAppointment = (apt) => {

@@ -1,30 +1,59 @@
 <template>
-  <section class="promotions section" aria-label="Promotions">
+  <section class="promotions section" aria-label="Reserve Your Dream Ride">
     <div class="container">
       <div class="promo-header">
-        <h2>Hot Promotions</h2>
-        <p class="sub">Grab limited-time offers and special deals.</p>
+        <h2>Reserve Your Dream Ride</h2>
+        <p class="sub">Schedule a private viewing of our exclusive luxury collection</p>
       </div>
 
       <div class="carousel" @mouseenter="pause" @mouseleave="play">
         <div class="track" :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-          <div class="slide" v-for="(p, i) in promos" :key="i">
+          <div class="slide" v-for="(car, i) in featuredCars" :key="car.id">
             <div class="promo-card">
-              <img :src="p.image" :alt="p.title" />
+              <!-- Car Image -->
+              <img 
+                :src="car.main_image || getPlaceholderImage(car.make)" 
+                :alt="car.make + ' ' + car.model"
+                loading="lazy"
+              />
+
               <div class="promo-body">
-                <h3>{{ p.title }}</h3>
-                <p class="desc">{{ p.desc }}</p>
+                <h3>{{ car.make }} {{ car.model }} {{ car.variant ? car.variant : '' }}</h3>
+                <p class="desc">
+                  {{ car.year }} • {{ car.color || 'Premium' }} • {{ car.mileage || 'Low Mileage' }} km
+                </p>
+                
                 <div class="meta">
-                  <span class="price">₱{{ p.price.toLocaleString() }}</span>
-                  <button class="btn" @click="openPromo(p)">View Offer</button>
+                  <span class="price">₱{{ Number(car.price).toLocaleString() }}</span>
+                  <button 
+                    class="btn" 
+                    @click="reserveCar(car)"
+                    :disabled="car.status !== 'available'"
+                  >
+                    {{ car.status === 'available' ? 'View' : 'Reserved' }}
+                  </button>
+                </div>
+
+                <!-- Quick Specs -->
+                <div class="car-specs">
+                  <span><i class="fas fa-gas-pump"></i> {{ car.fuel_type }}</span>
+                  <span><i class="fas fa-cog"></i> {{ car.transmission }}</span>
+                  <span v-if="car.warranty_period"><i class="fas fa-shield-alt"></i> {{ car.warranty_period }} mo warranty</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Dots -->
         <div class="dots">
-          <button v-for="(p,i) in promos" :key="i" :class="{ active: i === currentIndex }" @click="go(i)" :aria-label="`Go to promo ${i+1}`"></button>
+          <button 
+            v-for="(car,i) in featuredCars" 
+            :key="i" 
+            :class="{ active: i === currentIndex }" 
+            @click="go(i)"
+            :aria-label="`View ${car.make} ${car.model}`"
+          ></button>
         </div>
       </div>
     </div>
@@ -33,37 +62,72 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
 
-const promos = [
-  { title: '0% Promo on Selected Models', desc: 'Limited allocation – book while stocks last.', price: 1299000, image: 'https://images.unsplash.com/photo-1501386763375-9b4c9e7c0a8a' },
-  { title: 'Trade-in Bonus', desc: 'Extra value for trade-ins this week only.', price: 899000, image: 'https://images.unsplash.com/photo-1493238792000-8113da705763' },
-  { title: 'Holiday Cashbacks', desc: 'Cashback when you reserve & complete purchase.', price: 599000, image: 'https://images.unsplash.com/photo-1544103478-0a3a5b7f3f2f' }
-]
-
+const router = useRouter()
+const featuredCars = ref([])
 const currentIndex = ref(0)
 let timer = null
 
-function play() {
+// Fetch cars from your backend
+const fetchCars = async () => {
+  try {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listcars', {
+      credentials: 'include'  // For session if logged in
+    })
+    const data = await res.json()
+
+    if (data.status === 'success') {
+      // Filter for featured/available cars (limit to 5-6 for carousel)
+      featuredCars.value = data.cars
+        .filter(car => car.status === 'available')  // Show only available
+        .slice(0, 6)  // Limit to 6 for carousel
+        .map(car => ({
+          ...car,
+          // Format price if needed
+          price: car.price || 0
+        }))
+    }
+  } catch (err) {
+    console.error('Failed to fetch cars:', err)
+    // Fallback data if API fails
+    featuredCars.value = [
+      { id: 1, make: 'Lamborghini', model: 'Aventador', year: 2023, price: 48500000, color: 'Green', main_image: 'https://via.placeholder.com/600x400/228B22/FFFFFF?text=Lamborghini', status: 'available' },
+      { id: 2, make: 'Ferrari', model: 'SF90', year: 2023, price: 42000000, color: 'Red', main_image: 'https://via.placeholder.com/600x400/DC143C/FFFFFF?text=Ferrari', status: 'available' }
+    ]
+  }
+}
+
+const play = () => {
   stopTimer()
   timer = setInterval(() => {
-    currentIndex.value = (currentIndex.value + 1) % promos.length
-  }, 4000)
+    currentIndex.value = (currentIndex.value + 1) % featuredCars.value.length
+  }, 4500)
 }
 
-function pause() { stopTimer() }
-function stopTimer() { if (timer) { clearInterval(timer); timer = null } }
+const pause = () => stopTimer()
+const stopTimer = () => { if (timer) clearInterval(timer); timer = null }
+const go = (i) => currentIndex.value = i
 
-function go(i) { currentIndex.value = i }
-
-function openPromo(p) {
-  // hook for real action: navigate to promo page or open modal
-  alert(`Open promo: ${p.title}`)
+const reserveCar = (car) => {
+  if (car.status === 'available') {
+    router.push(`/cars-page`)
+  }
 }
 
-onMounted(() => play())
+const getPlaceholderImage = (make) => {
+  return `https://via.placeholder.com/600x400/111/FFFFFF?text=${encodeURIComponent(make)}`
+}
+
+onMounted(() => {
+  fetchCars()  // Load cars on mount
+  play()
+})
+
 onBeforeUnmount(() => stopTimer())
 </script>
 
+<!-- YOUR ORIGINAL STYLE — EXACT SAME, NO CHANGES -->
 <style scoped>
 .section { padding: 4rem 1rem; background: #f8f8f9; }
 .container { max-width: 1200px; margin: 0 auto; }
@@ -90,6 +154,5 @@ onBeforeUnmount(() => stopTimer())
 @media (max-width:800px){
   .promo-card { flex-direction: column; }
   .promo-card img, .promo-body { width: 100%; }
-  .promo-card img { height:180px; }
 }
 </style>

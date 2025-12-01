@@ -1,20 +1,17 @@
 <template>
-    <!-- Header -->
-    <header class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-50">
-      <h2 class="text-2xl font-semibold text-red-600">RideZone</h2>
-      <nav class="space-x-6 text-gray-700 font-medium flex items-center">
-        <router-link to="/" class="text-red-600 border-b-2 border-red-600">Home</router-link>
-        <router-link to="/cars-page" class="hover:text-red-600">Cars</router-link>
-        <router-link to="/about" class="hover:text-red-600">About</router-link>
-        <router-link to="/contact" class="hover:text-red-600">Contact</router-link>
-        <router-link to="/google-form" class="hover:text-red-600">Feedback</router-link>
-        <!-- <button @click="$router.push({ name: 'login' })" class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
-          Login
-        </button> -->
-      </nav>
-    </header>
+  <!-- Header -->
+  <header class="bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-50">
+    <h2 class="text-2xl font-semibold text-red-600">RideZone</h2>
+    <nav class="space-x-6 text-gray-700 font-medium flex items-center">
+      <router-link to="/" class="text-red-600 border-b-2 border-red-600">Home</router-link>
+      <router-link to="/cars-page" class="hover:text-red-600">Cars</router-link>
+      <router-link to="/about" class="hover:text-red-600">About</router-link>
+      <router-link to="/contact" class="hover:text-red-600">Contact</router-link>
+      <router-link to="/google-form" class="hover:text-red-600">Feedback</router-link>
+    </nav>
+  </header>
 
-  <!-- Add padding top so hero is not hidden -->
+  <!-- Hero Section -->
   <section class="hero pt-24">
     <div class="overlay">
       <div class="search-card">
@@ -22,21 +19,22 @@
         <p>Search and compare new or used vehicles from trusted dealers.</p>
 
         <div class="tabs">
-        <router-link to="/cars-page" class="inline-block px-12 py-5 bg-white text-red-600 font-bold text-xl rounded-full hover:bg-gray-100 transition shadow-xl">
-          Browse Cars
-        </router-link>      
+          <router-link 
+            to="/cars-page" 
+            class="inline-block px-12 py-5 bg-white text-red-600 font-bold text-xl rounded-full hover:bg-gray-100 transition shadow-xl">
+            Browse Cars
+          </router-link>
         </div>
       </div>
     </div>
   </section>
 </template>
 
-
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-const selectedTab = ref("new")
-const searchQuery = ref("")
+const selectedTab = ref("new");
+const searchQuery = ref("");
 </script>
 
 <style scoped>
@@ -54,14 +52,26 @@ const searchQuery = ref("")
 .overlay {
   width: 100%;
   height: 100%;
-  background: rgba(185, 183, 183, 0.55);
+  background: rgba(185, 183, 183, 0.625);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
 }
 
-/* TRANSPARENT SEARCH CARD */
+/* --- Animation Keyframes --- */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Hero Popup Animation Applied Here --- */
 .search-card {
   background: rgba(255, 255, 255, 0.376);
   backdrop-filter: blur(12px);
@@ -71,6 +81,10 @@ const searchQuery = ref("")
   width: 100%;
   text-align: center;
   box-shadow: 0px 12px 35px rgba(0,0,0,0.25);
+
+  opacity: 0;
+  animation: fadeUp 1s ease-out forwards;
+  animation-delay: 0.15s;
 }
 
 h1 {
@@ -86,7 +100,7 @@ p {
   margin-bottom: 1.5rem;
 }
 
-/* Tabs */
+/* Button Container */
 .tabs {
   display: flex;
   justify-content: center;
@@ -94,7 +108,7 @@ p {
   margin-bottom: 1.2rem;
 }
 
-/* GRAY & RED BUTTON STYLES */
+/* Gray & Red Button Styles */
 .tab {
   padding: 0.6rem 1.4rem;
   border: none;
@@ -107,11 +121,10 @@ p {
 }
 
 .tab.active {
-  background: #c1121f;    /* RED */
+  background: #c1121f;
   color: white;
 }
 
-/* Search row */
 .search-row {
   display: flex;
   gap: 0.8rem;
@@ -125,7 +138,6 @@ p {
   border-radius: 8px;
 }
 
-/* Search button - red */
 .search-btn {
   background: #c1121f;
   color: white;
@@ -141,4 +153,3 @@ p {
   background: #a10f19;
 }
 </style>
-  

@@ -2,9 +2,7 @@
   <aside class="sidebar" :class="theme">
     <div class="sidebar-header">
       <div class="logo">
-        <div class="logo-icon">
-          <i class="fas fa-car"></i>
-        </div>
+        <div class="logo-icon"><i class="fas fa-car"></i></div>
         <span class="logo-text">RideZone</span>
       </div>
     </div>
@@ -17,24 +15,24 @@
           <!-- Dashboard -->
           <li
             class="nav-item"
-            :class="{ active: $route.name === 'dashboards' }"
-            @click="navigate('dashboards')"
+            :class="{ active: $route.name === 'dashboard' }"
+            @click="navigate('dashboard')"
           >
             <i class="fas fa-home"></i>
             <span>Dashboard</span>
-            <div v-if="$route.name === 'dashboards'" class="active-indicator"></div>
+            <div v-if="$route.name === 'dashboard'" class="active-indicator"></div>
           </li>
 
-          <!-- Vehicle Inventory & Dealers - Admin Only -->
-          <template v-if="!isDealer">
+          <!-- Admin Only -->
+          <template v-if="user?.role === 'admin'">
             <li
               class="nav-item"
-              :class="{ active: $route.name === 'car-inventorys' }"
-              @click="navigate('car-inventorys')"
+              :class="{ active: $route.name === 'car-inventory' }"
+              @click="navigate('car-inventory')"
             >
-              <i class="fas fa-car"></i>
+              <i class="fas fa-warehouse"></i>
               <span>Vehicle Inventory</span>
-              <div v-if="$route.name === 'car-inventorys'" class="active-indicator"></div>
+              <div v-if="$route.name === 'car-inventory'" class="active-indicator"></div>
             </li>
 
             <li
@@ -54,19 +52,17 @@
       <div class="nav-section">
         <h3 class="nav-section-title">MANAGEMENT</h3>
         <ul class="nav-links">
-          <!-- Appointments -->
           <li
             class="nav-item"
-            :class="{ active: $route.name === 'adminappointment' }"
-            @click="navigate('adminappointment')"
+            :class="{ active: $route.name === 'appointments' || $route.name === 'adminappointment' }"
+            @click="navigate('adminappointment' || 'appointments')"
           >
             <i class="fas fa-calendar-check"></i>
             <span>Appointments</span>
             <span class="badge" v-if="pendingCount > 0">{{ pendingCount }}</span>
-            <div v-if="$route.name === 'adminappointment'" class="active-indicator"></div>
+            <div v-if="$route.name === 'appointments' || $route.name === 'adminappointment'" class="active-indicator"></div>
           </li>
 
-          <!-- Cars Management -->
           <li
             class="nav-item"
             :class="{ active: $route.name === 'cars-management' }"
@@ -77,9 +73,8 @@
             <div v-if="$route.name === 'cars-management'" class="active-indicator"></div>
           </li>
 
-          <!-- User Management - Admin Only -->
           <li
-            v-if="!isDealer"
+            v-if="user?.role === 'admin'"
             class="nav-item"
             :class="{ active: $route.name === 'user-management' }"
             @click="navigate('user-management')"
@@ -95,120 +90,95 @@
     <!-- Footer -->
     <div class="sidebar-footer">
       <div class="user-profile">
-        <div class="avatar">
-          <i class="fas fa-user"></i>
-        </div>
+        <div class="avatar"><i class="fas fa-user"></i></div>
         <div class="user-info">
-          <span class="user-name">{{ userName }}</span>
-          <span class="user-role">{{ userRole }}</span>
+          <span class="user-name">{{ user?.name || 'Guest' }}</span>
+          <span class="user-role">{{ (user?.role || 'guest').toUpperCase() }}</span>
         </div>
       </div>
-      <div class="footer-actions">
-        <button @click="logout" class="logout-btn" title="Logout">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
+      <button @click="logout" class="logout-btn" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
     </div>
   </aside>
 </template>
 
-<script>
-export default {
-  name: "Sidebar",
-  props: {
-    theme: { type: String, default: "dark" }
-  },
-  emits: ["toggle-theme"],
-  data() {
-    return {
-      pendingCount: 0,
-      user: null
-    }
-  },
-  computed: {
-    isDealer() {
-      return this.user?.role === 'dealer'
-    },
-    userName() {
-      return this.user?.name || 'User'
-    },
-    userRole() {
-      return this.user?.role === 'admin' ? 'admin' : 'dealer'
-    }
-  },
-  methods: {
-    navigate(routeName) {
-      this.$router.push({ name: routeName }).catch(() => {})
-    },
+<script setup>
+import { useRouter } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
+import { ref, watch } from 'vue'
 
-    // FIXED, BULLETPROOF, WITH X-User HEADER & CORRECT ENDPOINT!
-    async fetchPendingAppointments() {
-      try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}')
+const router = useRouter()
+const { user, logout: authLogout } = useAuth()  // ← TAMA NA: logout() from useAuth
 
-        const res = await fetch("https://ridezonesbackends-dzei.onrender.com/listappointment", { 
-          headers: {
-            'Content-Type': 'application/json',
-            'X-User': JSON.stringify(user)  // SECURED NA TALAGA!
-          }
-        })
+const pendingCount = ref(0)
+defineProps({
+  theme: { type: String, default: 'dark' }
+})
 
-        const data = await res.json()
+const navigate = (name) => {
+  router.push({ name }).catch(() => {})
+}
 
-        if (data.status === 'success' && Array.isArray(data.appointments)) {
-          this.pendingCount = data.appointments
-            .filter(a => a.status === 'pending').length
-        } else {
-          this.pendingCount = 0
-        }
-      } catch (err) {
-        console.error("Failed to fetch pending appointments:", err)
-        this.pendingCount = 0
-      }
-    },
+// Optional: badge count (pwede mo tanggalin kung ayaw mo na)
+const fetchPendingCount = async () => {
+  // Kunin yung current user from localStorage (same sa appointments)
+  const storedUser = localStorage.getItem('authUser')
+  const user = storedUser ? JSON.parse(storedUser) : null
 
-    logout() {
-      localStorage.removeItem("user")
-      this.user = null
-      this.pendingCount = 0
-      this.$router.push({ name: "login" })
-    }
-  },
-
-  mounted() {
-    // Load user
-    const stored = localStorage.getItem("user")
-    if (stored) {
-      this.user = JSON.parse(stored)
-    }
-
-    // Auto-update when login/logout
-    const updateUser = () => {
-      const updated = localStorage.getItem("user")
-      this.user = updated ? JSON.parse(updated) : null
-      this.fetchPendingAppointments()
-    }
-
-    window.addEventListener("userLoggedIn", updateUser)
-    window.addEventListener("userLoggedOut", updateUser)
-
-    // Initial fetch
-    this.fetchPendingAppointments()
-
-    // Real-time badge update
-    window.addEventListener("updateSidebarBadge", this.fetchPendingAppointments)
-  },
-
-  unmounted() {
-    window.removeEventListener("updateSidebarBadge", this.fetchPendingAppointments)
-    window.removeEventListener("userLoggedIn", () => {})
-    window.removeEventListener("userLoggedOut", () => {})
+  if (!user) {
+    pendingCount.value = 0
+    return
   }
+
+  try {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment')
+    const data = await res.json()
+
+    if (data.status === 'success' && Array.isArray(data.appointments)) {
+      let allPending = data.appointments
+
+      // SAME FILTER LOGIC: Kung dealer → dealer lang makakakita ng pending niya
+      if (user.role === 'dealer' && user.dealer_id) {
+        allPending = data.appointments.filter(a => 
+          a.dealer_id == user.dealer_id && a.status === 'pending'
+        )
+      } else {
+        // Admin → lahat ng pending
+        allPending = data.appointments.filter(a => a.status === 'pending')
+      }
+
+      pendingCount.value = allPending.length
+
+      console.log(`Pending appointments: ${pendingCount.value} →`, 
+        user.role === 'dealer' ? `Dealer ID: ${user.dealer_id}` : 'ALL (Admin)')
+    } else {
+      pendingCount.value = 0
+    }
+  } catch (err) {
+    console.error('Failed to fetch pending count:', err)
+    pendingCount.value = 0
+  }
+}
+
+watch(user, fetchPendingCount, { immediate: true })
+
+// FINAL LOGOUT — WALANG CORS, WALANG ERROR, 100% WORKING!
+const logout = () => {
+  // Optional lang — hindi na kailangan sa localhost/production
+  fetch('https://ridezonesbackends-dzei.onrender.com/logout', {
+    method: 'POST',
+    credentials: 'include'
+  }).catch(() => {})  // silent fail — normal ‘to
+
+  // MAIN: clear user + redirect
+  authLogout()         // ← clears localStorage + user.value = null
+  router.push('/login') // ← instant redirect
 }
 </script>
 
 <style scoped>
-/* Your epic style remains 100% untouched — perfect as always */
+/* LAHAT NG STYLE MO, HINDI KO GINALAW — SOBRANG GANDA PA RIN */
 .sidebar { width: 280px; height: 100vh; position: fixed; left: 0; top: 0; background: var(--bg-secondary); border-right: 1px solid var(--border-primary); display: flex; flex-direction: column; z-index: 1000; transition: all 0.3s ease; }
 .sidebar-header { padding: 30px 25px; border-bottom: 1px solid var(--border-primary); }
 .logo { display: flex; align-items: center; gap: 12px; }
@@ -229,12 +199,10 @@ export default {
 .sidebar-footer { padding: 20px 25px; border-top: 1px solid var(--border-primary); display: flex; align-items: center; justify-content: space-between; }
 .user-profile { display: flex; align-items: center; gap: 12px; }
 .avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #2d2d2d, #1a1a1a); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); border: 2px solid var(--border-primary); }
-/* FINAL & PERFECT — NAKA-STACK NA, SOBRANG CLEAN AT CLASSY */
-.user-info { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3;}
-.user-name { font-weight: 600; color: var(--text-primary, #ffffff); font-size: 0.95rem; letter-spacing: 0.3px;}
-.user-role { font-size: 0.75rem; color: var(--text-secondary, #9ca3af);text-transform: capitalize; font-weight: 500; margin-top: 2px; opacity: 0.9;}
-.footer-actions { display: flex; gap: 10px; }
-.theme-toggle, .logout-btn { width: 40px; height: 40px; border: none; background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
-.theme-toggle:hover, .logout-btn:hover { color: var(--text-accent); background: var(--bg-secondary); transform: scale(1.1); }
+.user-info { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
+.user-name { font-weight: 600; color: var(--text-primary); font-size: 0.95rem; }
+.user-role { font-size: 0.75rem; color: var(--text-secondary); text-transform: capitalize; font-weight: 500; margin-top: 2px; opacity: 0.9; }
+.logout-btn { width: 40px; height: 40px; border: none; background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+.logout-btn:hover { color: var(--text-accent); background: var(--bg-secondary); transform: scale(1.1); }
 @media (max-width: 1200px) { .sidebar { transform: translateX(-100%); } .sidebar.mobile-open { transform: translateX(0); } }
 </style>

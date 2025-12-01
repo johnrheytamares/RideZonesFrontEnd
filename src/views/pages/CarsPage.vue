@@ -21,18 +21,18 @@
         <!-- Make -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Make</label>
-          <select v-model="filters.make" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+          <select v-model="filters.make" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
             <option value="">All Makes</option>
-            <option v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
+            <option class="text-black" v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
           </select>
         </div>
 
         <!-- Year -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
-          <select v-model="filters.year" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+          <select v-model="filters.year" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
             <option value="">All Years</option>
-            <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+            <option class="text-black" v-for="year in years" :key="year" :value="year">{{ year }}</option>
           </select>
         </div>
 
@@ -40,9 +40,9 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Price Range (₱)</label>
           <div class="flex items-center gap-2 mb-2">
-            <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
             <span class="text-gray-400">—</span>
-            <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
           </div>
           <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full">
           <div class="text-xs text-gray-500 mt-1 text-right">Up to ₱{{ filters.maxPrice?.toLocaleString() || '10M' }}</div>
@@ -71,7 +71,7 @@
           <div class="grid grid-cols-2 gap-3">
             <label v-for="fuel in fuelTypes" :key="fuel" class="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" v-model="filters.fuelTypes" :value="fuel" class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
-              <span class="text-sm">{{ fuel }}</span>
+              <span class="text-sm text-black">{{ fuel }}</span>
             </label>
           </div>
         </div>
@@ -79,7 +79,7 @@
         <!-- Search -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-          <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-200 outline-none">
+          <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full text-black border px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-200 outline-none">
         </div>
 
         <!-- Buttons -->
@@ -141,10 +141,23 @@
               </button>
 
               <!-- Book Test Drive -->
-              <button @click="openModal(car.id)"
-                      class="mt-2 w-full bg-red-600 text-white py-3 font-medium hover:bg-red-700 transition text-lg rounded-lg">
+
+            <button 
+              @click="openModal(car.id)"
+              :disabled="!isCarAvailable(car)"
+              class="mt-2 w-full py-3 font-medium text-lg rounded-lg transition relative"
+              :class="isCarAvailable(car) 
+                ? 'bg-red-600 text-white hover:bg-red-700 cursor-pointer' 
+                : 'bg-gray-300 text-gray-600 cursor-not-allowed'">
+              
+              <span :class="{ 'opacity-0': !isCarAvailable(car) }">
                 Book Drive Test
-              </button>
+              </span>
+              
+              <span v-if="!isCarAvailable(car)" class="absolute inset-0 flex items-center justify-center text-sm font-medium">
+                {{ car.status === 'sold' ? 'Sold' : car.status === 'reserved' ? 'Reserved' : 'Not Available' }}
+              </span>
+            </button>
             </div>
           </div>
         </div>
@@ -189,9 +202,11 @@
 
         <!-- LEFT: IMAGE — Mas maliit pero impactful pa rin -->
         <div class="relative h-64 md:h-full min-h-64 overflow-hidden bg-gray-900">
-          <img :src="getCarImage(selectedCarDetail.main_image)" 
-               :alt="selectedCarDetail.make + ' ' + selectedCarDetail.model"
-               class="w-full h-full object-cover" />
+        <img 
+          :src="getCarImage(selectedCarDetail.main_image) || '/default-car.jpg'"
+          :alt="selectedCarDetail.make + ' ' + selectedCarDetail.model"
+          class="w-full h-full object-cover"
+          @error="($event) => $event.target.src = '/default-car.jpg'" />
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
           <div class="absolute bottom-5 left-5 text-white">
             <h1 class="text-3xl md:text-4xl font-bold drop-shadow-lg">{{ selectedCarDetail.make }} {{ selectedCarDetail.model }}</h1>
@@ -315,6 +330,10 @@ const years = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i)
 const fuelTypes = ['Gasoline', 'Diesel', 'Electric', 'Hybrid']
 const maxPossiblePrice = 10000000
 
+const isCarAvailable = (car) => {
+  return car.status === 'available'
+}
+
 // Modal States
 const showModal = ref(false)
 const selectedCar = ref(null)
@@ -325,8 +344,15 @@ const compareIds = ref([])
 // Image Helper
 const getCarImage = (path) => {
   if (!path) return '/default-car.jpg'
-  if (path.startsWith('http') || path.startsWith('data:')) return path
-  return path.startsWith('/') ? path : `/${path.trim()}`
+  
+  // Base64 (bagong uploads)
+  if (path.startsWith('data:image')) return path
+  
+  // Cloudinary or external (future)
+  if (path.startsWith('http')) return path
+  
+  // Old uploads folder (hindi na gagana sa production)
+  return '/default-car.jpg'
 }
 
 // Format Date
@@ -415,4 +441,48 @@ onMounted(() => {
 
 <style scoped>
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* -------------------------------------------
+   BUTTON POP-UP HOVER ANIMATION
+------------------------------------------- */
+button {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+button:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+button:active {
+  transform: scale(0.97);
+}
+
+/* -------------------------------------------
+   DROPDOWN ANIMATION
+------------------------------------------- */
+select {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+select:focus {
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.25);
+}
+select option {
+  transition: opacity 0.25s ease-in-out;
+}
+select:focus option {
+  opacity: 1;
+}
+
+/* -------------------------------------------
+   CARD HOVER ANIMATION
+------------------------------------------- */
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
+}
+
 </style>
+

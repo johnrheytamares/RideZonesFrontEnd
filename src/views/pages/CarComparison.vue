@@ -23,7 +23,11 @@
           <!-- Car 1 -->
           <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden transform hover:scale-[1.02] transition">
             <div class="relative h-64 bg-gray-900">
-              <img :src="getImage(car1.main_image)" class="w-full h-full object-cover" alt="Car 1">
+              <img 
+              :src="getImage(car1.main_image)" 
+              class="w-full h-full object-cover" 
+              alt="Car 1"
+              @error="e => e.target.src = '/default-car.jpg'" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
               <span class="absolute bottom-4 left-4 text-white text-3xl font-black drop-shadow-lg">
                 {{ car1.make }} {{ car1.model }}
@@ -41,8 +45,12 @@
           <!-- Car 2 -->
           <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden transform hover:scale-[1.02] transition">
             <div class="relative h-64 bg-gray-900">
-              <img :src="getImage(car2.main_image)" class="w-full h-full object-cover" alt="Car 2">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+              <img 
+                :src="getImage(car2.main_image)" 
+                class="w-full h-full object-cover" 
+                alt="Car 2"
+                @error="e => e.target.src = '/default-car.jpg'" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
               <span class="absolute bottom-4 left-4 text-white text-3xl font-black drop-shadow-lg">
                 {{ car2.make }} {{ car2.model }}
               </span>
@@ -75,28 +83,28 @@
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Year</td>
-                <td class="px-6 py-5 text-center">{{ car1.year }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.year }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car1.year }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car2.year }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Mileage</td>
-                <td class="px-6 py-5 text-center">{{ car1.mileage?.toLocaleString() || '—' }} km</td>
-                <td class="px-6 py-5 text-center">{{ car2.mileage?.toLocaleString() || '—' }} km</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car1.mileage?.toLocaleString() || '—' }} km</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car2.mileage?.toLocaleString() || '—' }} km</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Transmission</td>
-                <td class="px-6 py-5 text-center">{{ car1.transmission || '—' }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.transmission || '—' }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car1.transmission || '—' }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car2.transmission || '—' }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Fuel Type</td>
-                <td class="px-6 py-5 text-center">{{ car1.fuel_type || '—' }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.fuel_type || '—' }}</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car1.fuel_type || '—' }}</td>
+                <td class="px-6 py-5 text-red-600 text-center">{{ car2.fuel_type || '—' }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-5 font-medium text-gray-700">Color</td>
-                <td class="px-6 py-5 text-center">{{ car1.color || '—' }}</td>
-                <td class="px-6 py-5 text-center">{{ car2.color || '—' }}</td>
+                <td class="px-6 py-5  font-medium text-gray-700">Color</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car1.color || '—' }}</td>
+                <td class="px-6 py-5 text-gray-600 text-center">{{ car2.color || '—' }}</td>
               </tr>
               <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-5 font-medium text-gray-700">Warranty</td>
@@ -162,7 +170,15 @@ const formatDate = (dateStr) => {
 
 const getImage = (path) => {
   if (!path) return '/default-car.jpg'
-  return path.startsWith('http') ? path : `https://ridezonesbackend.onrender.com${path.startsWith('/') ? '' : '/'}${path}`
+  
+  // Base64 support (kasi gamit mo na base64 sa admin)
+  if (path.startsWith('data:image')) return path
+  
+  // External / Cloudinary (future)
+  if (path.startsWith('http')) return path
+  
+  // Old path — hindi na gagana sa production
+  return '/default-car.jpg'
 }
 
 const updateCompare = () => {
@@ -179,8 +195,7 @@ const updateCompare = () => {
 
 const fetchCars = async (ids) => {
   try {
-    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/api/compare/cars', {
-      method: 'POST',
+      const res = await fetch('https://ridezonesbackends-dzei.onrender.com/api/compare/cars', {      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids })
     })
