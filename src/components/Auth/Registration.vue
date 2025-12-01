@@ -275,15 +275,17 @@ export default {
     async handleRegister() {
       this.isLoading = true;
       this.message = '';
+      const token = grecaptcha.getResponse(); // Get the token from the widget
+      if (!token) {
+        alert('Please complete the reCAPTCHA');
+        return;
+      }
       
       try {
         // Simulate API call
-        await grecaptcha.ready();
-        const token = await grecaptcha.execute('6Leevh0sAAAAAFHXSDAziCYdUl4y30yFeQqrx3az', { action: 'submit' }); // 'submit' is a custom action name
-
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        const response = await fetch('https://ridezonesbackends-dzei.onrender.com/create', {
+        const response = await fetch('https://ridezonesbackends-dzei.onrender.com/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
