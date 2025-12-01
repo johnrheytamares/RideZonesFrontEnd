@@ -293,6 +293,12 @@ const editId = ref(null)
 const previewImage = ref('')
 const toast = ref({ show: false, message: '', type: 'success' })
 
+const currentUserInfo = ref({
+  name: 'Loading...',
+  role: '',
+  dealer_id: ''
+})
+
 const form = ref({
   dealer_id: '', make: '', model: '', variant: '', year: '', price: '',
   main_image: '', description: '', status: 'available',
@@ -398,14 +404,52 @@ const handleImageUpload = async (e) => {
 const fetchCars = async () => {
   loading.value = true
   try {
-    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+    // Kunin yung current logged in user
+    const storedUser = localStorage.getItem('user') || localStorage.getItem('authUser')
+    const user = storedUser ? JSON.parse(storedUser) : null
+
+    if (!user) {
+      showToast('Please login first', 'error')
+      loading.value = false
+      return
+    }
+
+    // Ipakita sa console at UI para sure
+    console.log('Fetching cars for user:', user)
+    currentUserInfo.value = {
+      name: user.name || user.email,
+      role: user.role,
+      dealer_id: user.dealer_id || 'All (Admin)'
+    }
+
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+
+    // Admin = walang X-User header → makikita lahat
+    // Dealer = may X-User → ififilter sa backend
+    if (user.role !== 'admin') {
+      headers['X-User'] = JSON.stringify(user)
+    }
+
     const res = await fetch(`${API_BASE}/listcars`, {
-      headers: { 'X-User': JSON.stringify(user) }
+      method: 'GET',
+      headers
     })
+
     const data = await res.json()
-    if (data.status === 'success') cars.value = data.cars || []
+
+    if (data.status === 'success') {
+      cars.value = data.cars || []
+      console.log(`Loaded ${cars.value.length} car(s) →`, user.role === 'admin' ? 'ALL (Admin)' : `Dealer ID: ${user.dealer_id}`)
+    } else {
+      cars.value = []
+      showToast('No cars found', 'error')
+    }
   } catch (err) {
-    showToast('Failed to load vehicles', 'error')
+    console.error('Fetch cars failed:', err)
+    showToast('Failed to load inventory', 'error')
+    cars.value = []
   } finally {
     loading.value = false
   }

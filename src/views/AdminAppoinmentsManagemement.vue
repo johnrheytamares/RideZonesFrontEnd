@@ -218,6 +218,7 @@ const selectedAppointment = ref({
 const pendingCount = computed(() => appointments.value.filter(a => a.status === 'pending').length)
 const approvedCount = computed(() => appointments.value.filter(a => ['approved','completed'].includes(a.status)).length)
 const cancelledCount = computed(() => appointments.value.filter(a => ['cancelled','rejected'].includes(a.status)).length)
+const currentDealerId = ref('Loading...')
 
 const carDisplay = computed(() => {
   const a = selectedAppointment.value
@@ -237,11 +238,33 @@ const appointmentDateTime = computed({
 const fetchAppointments = async () => {
   loading.value = true
   try {
+    // Kunin ulit yung user from localStorage (para sure na updated)
+    const storedUser = localStorage.getItem('authUser')
+    const user = storedUser ? JSON.parse(storedUser) : null
+
+    // Ipakita sa console para makita mo (pwede mo tanggalin mamaya)
+    console.log('Currently logged in as:', user)
+
+    // Optional: I-display din sa UI para sure ka
+    currentDealerId.value = user?.role === 'dealer' ? user.dealer_id : 'Admin / All Dealers'
+
     const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment')
+    
     const data = await res.json()
-    if (data.status === 'success') appointments.value = data.appointments || []
-  } catch (e) { console.error(e) }
-  finally { loading.value = false }
+
+    if (data.status === 'success') {
+      appointments.value = data.appointments || []
+      console.log(`Loaded ${appointments.value.length} appointment(s) for dealer_id: ${user?.dealer_id || 'ALL (admin)'}`)
+    } else {
+      appointments.value = []
+      console.warn('API returned error:', data)
+    }
+  } catch (e) {
+    console.error('Failed to load appointments:', e)
+    appointments.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 const editAppointment = (apt) => {
