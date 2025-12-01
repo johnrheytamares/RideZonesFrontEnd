@@ -150,7 +150,7 @@
                   <td class="py-5 text-sm font-mono">#{{ dealer.id }}</td>
                   <td class="py-5">
                     <img v-if="dealer.logo"
-                         :src="dealer.logo.startsWith('http') ? dealer.logo : 'http://localhost:8000' + dealer.logo"
+                         :src="dealer.logo.startsWith('http') ? dealer.logo : 'https://ridezonesbackends-dzei.onrender.com/' + dealer.logo"
                          class="w-12 h-12 rounded-full object-cover border-2 border-white/10" />
                     <div v-else class="w-12 h-12 bg-white/5 rounded-full border-2 border-dashed border-white/20"></div>
                   </td>

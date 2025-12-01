@@ -189,7 +189,7 @@ onMounted(() => {
 // Image helper
 const getCarImage = (path) => {
   if (!path) return '/default-car.jpg'
-  return path.startsWith('http') ? path : `http://localhost:8000${path.startsWith('/') ? '' : '/'}${path}`
+  return path.startsWith('http') ? path : `https://ridezonesbackends-dzei.onrender.com${path.startsWith('/') ? '' : '/'}${path}`
 }
 
 // Appointment Modal

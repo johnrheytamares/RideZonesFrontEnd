@@ -103,6 +103,8 @@
           </div>
         </div>
 
+        <div class="g-recaptcha" data-sitekey="6Leevh0sAAAAAFHXSDAziCYdUl4y30yFeQqrx3az"></div> <!-- reCAPTCHA widget -->
+
         <div class="form-options">
           <label class="checkbox-wrapper">
             <input type="checkbox" v-model="agreeTerms" />
@@ -273,9 +275,12 @@ export default {
     async handleRegister() {
       this.isLoading = true;
       this.message = '';
-
+      
       try {
         // Simulate API call
+        await grecaptcha.ready();
+        const token = await grecaptcha.execute('6Leevh0sAAAAAFHXSDAziCYdUl4y30yFeQqrx3az', { action: 'submit' }); // 'submit' is a custom action name
+
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         const response = await fetch('https://ridezonesbackends-dzei.onrender.com/create', {
