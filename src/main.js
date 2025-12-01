@@ -39,6 +39,12 @@ body {
 }
 `
 
+const recaptchaScript = document.createElement('script');
+recaptchaScript.src = 'https://www.google.com/recaptcha/api.js';
+recaptchaScript.async = true;
+recaptchaScript.defer = true;
+document.head.appendChild(recaptchaScript);
+
 // Inject global styles
 const styleSheet = document.createElement('style')
 styleSheet.textContent = styles
