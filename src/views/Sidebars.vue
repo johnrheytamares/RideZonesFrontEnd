@@ -127,7 +127,7 @@ const fetchPendingCount = async () => {
     return
   }
   try {
-    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listAppointments', {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment', {
       credentials: 'include'
     })
     const data = await res.json()

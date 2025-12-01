@@ -82,10 +82,24 @@
 
       <!-- Divider + Google (optional) -->
       <div class="divider"><span class="divider-text">or continue with</span></div>
-      <div class="google-login">
-        <div id="g_id_signin"></div>
+      
+      <div class="google-login mt-4 flex justify-center">
+        <!-- DITO NA YUNG GOOGLE BUTTON -->
+        <div id="g_id_onload"
+            data-client_id="1090968034876-fh3nbirtjc4sgef6itbbn50pggo1j3l0.apps.googleusercontent.com"
+            data-callback="handleGoogleResponse"
+            data-auto_prompt="false">
+        </div>
+        
+        <div class="g_id_signin"
+            data-type="standard"
+            data-size="large"
+            data-theme="outline"
+            data-text="signin_with"
+            data-shape="rectangular"
+            data-logo_alignment="left">
+        </div>
       </div>
-
       <!-- Register Link -->
       <div class="registration-section">
         <p>Don't have an account? <router-link to="/register" class="login-link">Sign Up</router-link></p>
@@ -192,45 +206,62 @@ const handleLogin = async () => {
 }
 
 // Optional: Google Sign-In (hindi na kailangan kung ayaw mo)
-const handleGoogleResponse = async (response) => {
-  if (!response?.credential) {
-    errorMessage.value = 'Google login cancelled or failed.'
+// <script setup>
+async function handleGoogleResponse(response) {
+  // Kung walang credential = may error sa Google side
+  if (!response || !response.credential) {
+    alert('Google login failed. Please try again.')
+    console.error('No credential from Google:', response)
     return
   }
 
-  isLoading.value = true
-  errorMessage.value = ''
+  const token = response.credential
 
   try {
-    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/auth/google', {
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/auth/google/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential: response.credential })
+      headers: {
+        'Content-Type': 'application/json',
+        // Optional pero safe: prevent caching
+        'Cache-Control': 'no-cache'
+      },
+      body: JSON.stringify({
+        credential: token
+      })
     })
 
     const data = await res.json()
 
-    if (res.ok && data.success) {
-      const user = data.user
+    if (data.success && data.user) {
+      // 1. I-save sa localStorage (para persistent kahit mag-refresh)
+      localStorage.setItem('authUser', JSON.stringify(data.user))
 
-      if (!['admin', 'dealer'].includes(user.role)) {
-        errorMessage.value = 'Access denied: Only Admin and Dealers can log in.'
-        isLoading.value = false
-        return
-      }
+      // 2. I-set sa window para gamitin sa booking modal (window.authUser?.id)
+      window.authUser = data.user
 
-      login(user)
-      setTimeout(() => router.push('/dashboard'), 600)
+      // 3. Optional: i-update mo yung Pinia/Vuex store mo kung meron
+      // store.dispatch('auth/login', data.user)
+
+      // 4. Success message
+      alert(`Welcome back, ${data.user.name.split(' ')[0]}!`)
+
+      // 5. Refresh page or close login modal
+      window.location.href = '/dashboard'// pinaka-simple at siguradong gagana
+
     } else {
-      errorMessage.value = data.error || 'Google login failed.'
+      // May error galing backend
+      const errorMsg = data.error || 'Login failed. Please try again.'
+      alert(errorMsg)
+      console.error('Backend error:', data)
     }
+
   } catch (err) {
-    console.error('Google login error:', err)
-    errorMessage.value = 'Server error. Try again later.'
-  } finally {
-    isLoading.value = false
+    // Network error, CORS, Render sleeping, etc.
+    console.error('Login request failed:', err)
+    alert('Connection error. Please check your internet and try again.')
   }
 }
+// </script>
 
 // === GOOGLE SCRIPT LOADER ===
 onMounted(() => {
