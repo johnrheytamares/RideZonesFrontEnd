@@ -238,29 +238,34 @@ const appointmentDateTime = computed({
 const fetchAppointments = async () => {
   loading.value = true
   try {
-    // Kunin ulit yung user from localStorage (para sure na updated)
     const storedUser = localStorage.getItem('authUser')
     const user = storedUser ? JSON.parse(storedUser) : null
 
-    // Ipakita sa console para makita mo (pwede mo tanggalin mamaya)
     console.log('Currently logged in as:', user)
-
-    // Optional: I-display din sa UI para sure ka
     currentDealerId.value = user?.role === 'dealer' ? user.dealer_id : 'Admin / All Dealers'
 
     const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment')
-    
     const data = await res.json()
 
-    if (data.status === 'success') {
-      appointments.value = data.appointments || []
-      console.log(`Loaded ${appointments.value.length} appointment(s) for dealer_id: ${user?.dealer_id || 'ALL (admin)'}`)
+    if (data.status === 'success' && data.appointments) {
+      let filtered = data.appointments
+
+      // ITO LANG ANG KULANG MO BRO!!!
+      if (user?.role === 'dealer' && user?.dealer_id) {
+        filtered = data.appointments.filter(apt => 
+          apt.dealer_id == user.dealer_id
+        )
+      }
+      // Kung admin → lahat talaga
+
+      appointments.value = filtered
+      console.log(`Showing ${appointments.value.length} appointment(s) →`, 
+        user.role === 'dealer' ? `Dealer ID: ${user.dealer_id}` : 'ALL (Admin)')
     } else {
       appointments.value = []
-      console.warn('API returned error:', data)
     }
   } catch (e) {
-    console.error('Failed to load appointments:', e)
+    console.error(e)
     appointments.value = []
   } finally {
     loading.value = false
