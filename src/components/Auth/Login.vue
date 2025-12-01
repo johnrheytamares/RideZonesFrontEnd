@@ -136,12 +136,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '../../composables/useAuth'  // ← DOT PATHS ONLY
+import { useAuth } from '../../composables/useAuth'
 import ForgotPasswordModal from './ForgotPassword.vue'
 
 const router = useRouter()
-const { login } = useAuth()  // ← ISANG LINYA LANG, TAPOS NA FOREVER!
+const { login } = useAuth()
 
+// Form refs
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
@@ -150,6 +151,7 @@ const isLoading = ref(false)
 const errorMessage = ref('')
 const openForgotModal = ref(false)
 
+// ================== EMAIL/PASSWORD LOGIN ==================
 const handleLogin = async () => {
   if (!email.value || !password.value) {
     errorMessage.value = 'Email and password are required'
@@ -173,96 +175,69 @@ const handleLogin = async () => {
 
     if (response.ok && data.status === 'success') {
       const user = data.user
+      const role = (user.role || '').toLowerCase()
 
-      // FIX: Normalize role to lowercase
-      const role = user.role?.toLowerCase()
-
-      // Block buyers & guests
       if (!['admin', 'dealer'].includes(role)) {
         errorMessage.value = 'Access denied: Only Admin and Dealer accounts can log in.'
         isLoading.value = false
         return
       }
 
-      // SUCCESS — save user + redirect
-      login(user)  // yung useAuth mo — gumagana na ‘to
+      login(user)
+      localStorage.setItem('authUser', JSON.stringify(user))
+      window.authUser = user
 
-      // Optional toast
-      //toast('Welcome back, ' + user.name + '!')
-
-      setTimeout(() => {
-        router.push('/dashboard')  // parehas lang naman admin at dealer dashboard mo
-      }, 600)
-
+      setTimeout(() => router.push('/dashboard'), 600)
     } else {
       errorMessage.value = data.message || 'Invalid email or password'
     }
   } catch (err) {
-    console.error(err)
     errorMessage.value = 'Server is down or no internet connection.'
   } finally {
     isLoading.value = false
   }
 }
 
-// Optional: Google Sign-In (hindi na kailangan kung ayaw mo)
-async function handleGoogleResponse(response) {
-  // Kung walang credential = may error sa Google side
-  if (!response || !response.credential) {
-    alert('Google login failed. Please try again.')
-    console.error('No credential from Google:', response)
+// ================== GOOGLE LOGIN — 100% WORKING VERSION ==================
+// IMPORTANT: Ginawa nating GLOBAL function para makita ni Google script
+window.handleGoogleResponse = async function (response) {
+  if (!response?.credential) {
+    console.warn('Google login cancelled or failed')
     return
   }
-
-  const token = response.credential
 
   try {
     const res = await fetch('https://ridezonesbackends-dzei.onrender.com/auth/google/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Optional pero safe: prevent caching
-        'Cache-Control': 'no-cache'
-      },
-      body: JSON.stringify({
-        credential: token
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential })
     })
 
     const data = await res.json()
 
     if (data.success && data.user) {
-      // 1. I-save sa localStorage (para persistent kahit mag-refresh)
+      // Save everywhere
       localStorage.setItem('authUser', JSON.stringify(data.user))
-
-      // 2. I-set sa window para gamitin sa booking modal (window.authUser?.id)
       window.authUser = data.user
+      login(data.user) // kung may useAuth ka
 
-      // 3. Optional: i-update mo yung Pinia/Vuex store mo kung meron
-      // store.dispatch('auth/login', data.user)
+      // Success feedback (pwede mo palitan ng toast)
+      // alert(`Welcome, ${data.user.name.split(' ')[0]}!`)
 
-      // 4. Success message
-      alert(`Welcome back, ${data.user.name.split(' ')[0]}!`)
-
-      // 5. Refresh page or close login modal
-      window.location.href = '/dashboard'// pinaka-simple at siguradong gagana
-
+      // Redirect
+      window.location.href = '/dashboard'
     } else {
-      // May error galing backend
-      const errorMsg = data.error || 'Login failed. Please try again.'
-      alert(errorMsg)
-      console.error('Backend error:', data)
+      alert(data.error || 'Google login failed')
     }
-
   } catch (err) {
-    // Network error, CORS, Render sleeping, etc.
-    console.error('Login request failed:', err)
-    alert('Connection error. Please check your internet and try again.')
+    console.error('Google login error:', err)
+    alert('Connection error. Please try again.')
   }
 }
 
-// === GOOGLE SCRIPT LOADER ===
+// ================== LOAD GOOGLE SCRIPT & RENDER BUTTON ==================
 onMounted(() => {
+  // Create script tag
   const script = document.createElement('script')
   script.src = 'https://accounts.google.com/gsi/client'
   script.async = true
@@ -271,23 +246,32 @@ onMounted(() => {
 
   script.onload = () => {
     window.google.accounts.id.initialize({
-      client_id: '1090968034876-fh3nbirtjc4sgef6itbbn50pggo1j3l0.apps.googleusercontent.com', 
-      callback: handleGoogleResponse
+      client_id: '1090968034876-fh3nbirtjc4sgef6itbbn50pggo1j3l0.apps.googleusercontent.com',
+      callback: window.handleGoogleResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
     })
 
+    // Render the beautiful Google button
     window.google.accounts.id.renderButton(
-      document.getElementById('g_id_signin'),
+      document.querySelector('.g_id_signin'), // <-- importanteng may element na may class na 'g_id_signin'
       {
         theme: 'outline',
         size: 'large',
-        width: 350,
+        type: 'standard',
         text: 'continue_with',
-        logo_alignment: 'left'
+        shape: 'rectangular',
+        logo_alignment: 'left',
+        width: '350'
       }
     )
 
-    // Optional: auto popup (one-tap)
-    window.google.accounts.id.prompt()
+    // Optional: One-tap login (pwede mong i-comment out kung ayaw mo)
+    // window.google.accounts.id.prompt()
+  }
+
+  script.onerror = () => {
+    console.error('Failed to load Google Identity Services script')
   }
 })
 </script>

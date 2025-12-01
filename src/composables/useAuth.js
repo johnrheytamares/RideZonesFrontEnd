@@ -5,12 +5,12 @@ export function useAuth() {
   const user = ref(null)
 
   // Load from localStorage kapag nag-load yung app
-  const savedUser = localStorage.getItem('rz_user')
+  const savedUser = localStorage.getItem('user')
   if (savedUser) {
     try {
       user.value = JSON.parse(savedUser)
     } catch (e) {
-      localStorage.removeItem('rz_user')
+      localStorage.removeItem('user')
     }
   }
 
@@ -18,12 +18,12 @@ export function useAuth() {
 
   const login = (userData) => {
     user.value = userData
-    localStorage.setItem('rz_user', JSON.stringify(userData))
+    localStorage.setItem('user', JSON.stringify(userData))
   }
 
   const logout = () => {
     user.value = null
-    localStorage.removeItem('rz_user')
+    localStorage.removeItem('user')
   }
 
   return {
