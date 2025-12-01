@@ -103,7 +103,7 @@
           </div>
         </div>
 
-        <div class="g-recaptcha" data-sitekey="6Leevh0sAAAAAFHXSDAziCYdUl4y30yFeQqrx3az"></div> <!-- reCAPTCHA widget -->
+        <div class="g-recaptcha" data-sitekey="6Lfi7h0sAAAAAKJGT6TPB09Ivo9qw-9pSzA5Yx1u"></div> <!-- reCAPTCHA widget -->
 
         <div class="form-options">
           <label class="checkbox-wrapper">
