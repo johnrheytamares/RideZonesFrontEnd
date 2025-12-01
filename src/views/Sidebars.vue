@@ -122,19 +122,41 @@ const navigate = (name) => {
 
 // Optional: badge count (pwede mo tanggalin kung ayaw mo na)
 const fetchPendingCount = async () => {
-  if (!user.value) {
+  // Kunin yung current user from localStorage (same sa appointments)
+  const storedUser = localStorage.getItem('authUser')
+  const user = storedUser ? JSON.parse(storedUser) : null
+
+  if (!user) {
     pendingCount.value = 0
     return
   }
+
   try {
-    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment', {
-      credentials: 'include'
-    })
+    const res = await fetch('https://ridezonesbackends-dzei.onrender.com/listappointment')
     const data = await res.json()
+
     if (data.status === 'success' && Array.isArray(data.appointments)) {
-      pendingCount.value = data.appointments.filter(a => a.status === 'pending').length
+      let allPending = data.appointments
+
+      // SAME FILTER LOGIC: Kung dealer → dealer lang makakakita ng pending niya
+      if (user.role === 'dealer' && user.dealer_id) {
+        allPending = data.appointments.filter(a => 
+          a.dealer_id == user.dealer_id && a.status === 'pending'
+        )
+      } else {
+        // Admin → lahat ng pending
+        allPending = data.appointments.filter(a => a.status === 'pending')
+      }
+
+      pendingCount.value = allPending.length
+
+      console.log(`Pending appointments: ${pendingCount.value} →`, 
+        user.role === 'dealer' ? `Dealer ID: ${user.dealer_id}` : 'ALL (Admin)')
+    } else {
+      pendingCount.value = 0
     }
   } catch (err) {
+    console.error('Failed to fetch pending count:', err)
     pendingCount.value = 0
   }
 }
