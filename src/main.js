@@ -39,9 +39,10 @@ body {
 }
 `
 
-// Load reCAPTCHA script dynamically to avoid blocking
 const recaptchaScript = document.createElement('script');
-recaptchaScript.src = 'https://www.google.com/recaptcha/api.js?render=6Lfi7h0sAAAAAKJGT6TPB09Ivo9qw-9pSzA5Yx1u';
+recaptchaScript.src = 'https://www.google.com/recaptcha/api.js';
+recaptchaScript.async = true;
+recaptchaScript.defer = true;
 document.head.appendChild(recaptchaScript);
 
 // Inject global styles
