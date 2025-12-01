@@ -206,7 +206,6 @@ const handleLogin = async () => {
 }
 
 // Optional: Google Sign-In (hindi na kailangan kung ayaw mo)
-// <script setup>
 async function handleGoogleResponse(response) {
   // Kung walang credential = may error sa Google side
   if (!response || !response.credential) {
@@ -261,7 +260,6 @@ async function handleGoogleResponse(response) {
     alert('Connection error. Please check your internet and try again.')
   }
 }
-// </script>
 
 // === GOOGLE SCRIPT LOADER ===
 onMounted(() => {
