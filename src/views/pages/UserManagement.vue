@@ -80,12 +80,26 @@
                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition" />
             </div>
 
-            <div>
+            <div class="relative">
               <label class="text-xs text-gray-400 mb-2 block">
                 Password {{ isEditing ? '(leave blank to keep current)' : '*' }}
               </label>
-              <input v-model="form.password" type="password" :required="!isEditing"
-                     class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition" />
+              <input 
+                v-model="form.password" 
+                :type="showPassword ? 'text' : 'password'" 
+                :required="!isEditing"
+                placeholder="Enter strong password"
+                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 pr-14 text-sm focus:border-red-500 focus:outline-none transition placeholder-gray-600" 
+              />
+              
+              <!-- Eye Toggle Button -->
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute inset-y-0 right-0 flex items-center pr-4 pt-7 text-gray-400 hover:text-red-400 transition"
+              >
+                <i class="fas text-lg" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+              </button>
             </div>
 
             <div>
@@ -102,6 +116,18 @@
                 <option class="text-black" value="dealer">Dealer</option>
                 <option class="text-black" value="admin">Administrator</option>
               </select>
+            </div>
+
+            <!-- Ipasok mo ito PAGKATAPOS ng Role select -->
+            <div v-if="form.role === 'dealer'" class="space-y-2 animate-fadeIn">
+              <label class="text-xs text-gray-400 mb-2 block">Dealership <span class="text-red-400">*</span></label>
+              <select v-model="form.dealer_id" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
+                <option value="" disabled>Select a dealership</option>
+                <option class="text-black" v-for="dealer in dealers" :key="dealer.id" :value="dealer.id">
+                  {{ dealer.name }} — {{ dealer.address || 'No address' }}
+                </option>
+              </select>
+              <p class="text-xs text-gray-500 mt-1">This dealer account will only manage cars under this dealership.</p>
             </div>
 
             <div class="flex gap-4 pt-4">
@@ -236,6 +262,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
 const loading = ref(false)
 const users = ref([])
+const dealers = ref([])  // ← NEW: list of dealerships
 const isEditing = ref(false)
 const editId = ref(null)
 const errorMessage = ref('')
@@ -243,8 +270,14 @@ const toastMessage = ref('')
 const toastType = ref('success')
 const currentUser = ref({ id: null })
 
+// Form with dealer_id
 const form = ref({
-  name: '', email: '', password: '', phone: '', role: 'buyer'
+  name: '',
+  email: '',
+  password: '',
+  phone: '',
+  role: 'buyer',
+  dealer_id: ''  // ← NEW
 })
 
 const searchQuery = ref('')
@@ -252,6 +285,7 @@ const filterRole = ref('')
 const filteredUsers = ref([])
 const currentPage = ref(1)
 const perPage = 8
+const showPassword = ref(false) 
 
 // Stats
 const adminCount = computed(() => users.value.filter(u => u.role === 'admin').length)
@@ -263,7 +297,9 @@ const startIndex = computed(() => (currentPage.value - 1) * perPage + 1)
 const endIndex = computed(() => Math.min(currentPage.value * perPage, filteredUsers.value.length))
 const pageNumbers = computed(() => {
   const pages = []
-  for (let i = Math.max(1, currentPage.value - 2); i <= Math.min(totalPages.value, currentPage.value + 2); i++) {
+  const total = totalPages.value
+  const current = currentPage.value
+  for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
     pages.push(i)
   }
   return pages
@@ -288,34 +324,75 @@ const getHeaders = () => ({
   Authorization: `Bearer ${getToken()}`
 })
 
+// ========================
+// SUBMIT FORM (CREATE / UPDATE)
+// ========================
 const submitForm = async () => {
   errorMessage.value = ''
   loading.value = true
 
-  const url = isEditing.value ? `${API_BASE}/update/${editId.value}` : `${API_BASE}/create`
+  const url = isEditing.value 
+    ? `${API_BASE}/update/${editId.value}` 
+    : `${API_BASE}/create`
+  
   const method = isEditing.value ? 'PUT' : 'POST'
-  const body = { ...form.value }
-  if (isEditing.value && !body.password) delete body.password
+
+  // Build payload
+  const body = {
+    name: form.value.name.trim(),
+    email: form.value.email.trim(),
+    role: form.value.role,
+    phone: form.value.phone || null
+  }
+
+  // Password: required on create, optional on update
+  if (!isEditing.value && form.value.password) {
+    body.password = form.value.password
+  } else if (isEditing.value && form.value.password) {
+    body.password = form.value.password
+  }
+
+  // dealer_id logic
+  if (form.value.role === 'dealer') {
+    if (!form.value.dealer_id) {
+      errorMessage.value = 'Please select a dealership for this dealer account'
+      loading.value = false
+      return
+    }
+    body.dealer_id = Number(form.value.dealer_id)
+  } else {
+    body.dealer_id = null  // buyer or admin → null
+  }
 
   try {
-    const res = await fetch(url, { method, headers: getHeaders(), body: JSON.stringify(body) })
+    const res = await fetch(url, {
+      method,
+      headers: getHeaders(),
+      body: JSON.stringify(body)
+    })
+
     const data = await res.json()
+
     if (res.ok) {
-      toast(isEditing.value ? 'User updated!' : 'User created!')
+      toast(isEditing.value ? 'User updated successfully!' : 'User created successfully!')
       cancelEdit()
       fetchUsers()
     } else {
       errorMessage.value = data.message || 'Operation failed'
     }
-  } catch {
-    errorMessage.value = 'Network error'
+  } catch (err) {
+    console.error(err)
+    errorMessage.value = 'Network error. Please try again.'
   } finally {
     loading.value = false
   }
 }
 
+// ========================
+// DELETE USER
+// ========================
 const deleteUser = async (id) => {
-  if (!confirm('Delete this user permanently?')) return
+  if (!confirm('Permanently delete this user? This cannot be undone.')) return
   loading.value = true
   try {
     await fetch(`${API_BASE}/delete/${id}`, { method: 'DELETE', headers: getHeaders() })
@@ -328,20 +405,43 @@ const deleteUser = async (id) => {
   }
 }
 
+// ========================
+// EDIT USER
+// ========================
 const editUser = (user) => {
   isEditing.value = true
   editId.value = user.id
-  form.value = { ...user, password: '' }
+  form.value = {
+    name: user.name || '',
+    email: user.email || '',
+    phone: user.phone || '',
+    role: user.role || 'buyer',
+    dealer_id: user.dealer_id || '',
+    password: ''
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// ========================
+// CANCEL EDIT
+// ========================
 const cancelEdit = () => {
   isEditing.value = false
   editId.value = null
-  form.value = { name: '', email: '', password: '', phone: '', role: 'buyer' }
+  form.value = {
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: 'buyer',
+    dealer_id: ''
+  }
   errorMessage.value = ''
 }
 
+// ========================
+// FETCH USERS + DEALERS
+// ========================
 const fetchUsers = async () => {
   loading.value = true
   try {
@@ -349,19 +449,39 @@ const fetchUsers = async () => {
     const data = await res.json()
     users.value = Array.isArray(data) ? data : data.users || []
     applyFilters()
-  } catch (e) { console.error(e) }
-  finally { loading.value = false }
+  } catch (e) {
+    console.error('Failed to fetch users:', e)
+    users.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
+// Fetch dealerships for dropdown
+const fetchDealers = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/listdealers`, { headers: getHeaders() })
+    const data = await res.json()
+    dealers.value = data.dealers || []
+  } catch (err) {
+    console.error('Failed to load dealers:', err)
+    dealers.value = []
+  }
+}
+
+// ========================
+// FILTERS
+// ========================
 const applyFilters = () => {
   let result = users.value
 
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase()
-    result = result.filter(u => 
+    result = result.filter(u =>
       u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
     )
   }
+
   if (filterRole.value) {
     result = result.filter(u => u.role === filterRole.value)
   }
@@ -369,21 +489,30 @@ const applyFilters = () => {
   filteredUsers.value = result
 }
 
+// ========================
+// TOAST
+// ========================
 const toast = (msg, type = 'success') => {
   toastMessage.value = msg
   toastType.value = type
   setTimeout(() => toastMessage.value = '', 4000)
 }
 
-onMounted(() => {
+// ========================
+// ON MOUNTED
+// ========================
+onMounted(async () => {
   const token = getToken()
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]))
-      currentUser.value.id = payload.sub
+      currentUser.value.id = payload.sub || null
     } catch {}
   }
-  fetchUsers()
+
+  // Load both users and dealers
+  await fetchDealers()
+  await fetchUsers()
 })
 </script>
 

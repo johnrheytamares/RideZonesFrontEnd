@@ -5,18 +5,18 @@
         <h3>CarDeal</h3>
         <p>Trusted dealership network — reserve online, test drive at your preferred dealer.</p>
         <div class="socials">
-          <a aria-label="Facebook" href="#" class="soc">Fb</a>
-          <a aria-label="Instagram" href="#" class="soc">Ig</a>
-          <a aria-label="Twitter" href="#" class="soc">Tw</a>
+          <a aria-label="Facebook" href="https://web.facebook.com" class="soc"><i class="fab fa-facebook-f"></i></a>
+          <a aria-label="Instagram" href="https://www.instagram.com" class="soc"><i class="fab fa-instagram"></i></a>
+          <a aria-label="Youtube" href="https://www.youtube.com" class="soc"><i class="fab fa-youtube"></i></a>
         </div>
       </div>
 
       <div class="col links">
         <h4>Quick Links</h4>
         <ul>
-          <li><a href="#">Inventory</a></li>
-          <li><a href="#">Promos</a></li>
-          <li><a href="#">Services</a></li>
+          <li><a href="/cars-page">Cars</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/google-form">Feedback</a></li>
 
           <!-- 🔥 Updated: Contact now goes to the new Contact page -->
           <li><router-link to="/contact">Contact</router-link></li>

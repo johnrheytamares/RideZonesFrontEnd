@@ -203,7 +203,7 @@ async function createAppointment() {
       success.value = true
       await fetchBookedDates()
       emit('saved')
-      setTimeout(() => $emit('close'), 3000) // Auto-close
+      setTimeout(() => emit('close'), 3000) // Auto-close
     } else {
       alert('Booking failed: ' + (data.error || data.message || 'Please try again.'))
     }

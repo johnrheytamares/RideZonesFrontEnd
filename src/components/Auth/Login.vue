@@ -160,25 +160,24 @@ const handleLogin = async () => {
     if (response.ok && data.status === 'success') {
       const user = data.user
 
-      // BLOCK BUYER — ADMIN & DEALER LANG TALAGA
-      if (!['admin', 'dealer'].includes(user.role)) {
-        errorMessage.value = 'Access Denied: Only Admin and Dealer can login here.'
+      // FIX: Normalize role to lowercase
+      const role = user.role?.toLowerCase()
+
+      // Block buyers & guests
+      if (!['admin', 'dealer'].includes(role)) {
+        errorMessage.value = 'Access denied: Only Admin and Dealer accounts can log in.'
         isLoading.value = false
         return
       }
 
-      // SUCCESS — I-SAVE SA LOCALSTORAGE + GLOBAL STATE
-      login(user)  // ← ISANG LINYA LANG! TAPOS NA ANG BUONG AUTH SYSTEM!
+      // SUCCESS — save user + redirect
+      login(user)  // yung useAuth mo — gumagana na ‘to
 
-      // Optional success messag
+      // Optional toast
+      //toast('Welcome back, ' + user.name + '!')
 
-      // Redirect based on role
       setTimeout(() => {
-        if (['admin', 'dealer'].includes(user.role)) {
-          router.push('/dashboard')
-        } else {
-          router.push('/login')
-        }
+        router.push('/dashboard')  // parehas lang naman admin at dealer dashboard mo
       }, 600)
 
     } else {
@@ -186,7 +185,7 @@ const handleLogin = async () => {
     }
   } catch (err) {
     console.error(err)
-    errorMessage.value = 'No internet connection or server is down.'
+    errorMessage.value = 'Server is down or no internet connection.'
   } finally {
     isLoading.value = false
   }

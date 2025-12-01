@@ -77,16 +77,16 @@
             <div class="pt-6 border-t border-gray-200">
               <p class="text-gray-600 font-medium mb-4">Follow Us</p>
               <div class="flex gap-4">
-                <a href="#" class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-red-600 hover:text-white transition">
+                <a href="https://web.facebook.com" class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center hover:bg-gray-600 hover:text-white transition">
                   <i class="fab fa-facebook-f"></i>
                 </a>
-                <a href="#" class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-red-600 hover:text-white transition">
+                <a href="https://www.instagram.com" class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center hover:bg-gray-600 hover:text-white transition">
                   <i class="fab fa-instagram"></i>
                 </a>
-                <a href="#" class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-red-600 hover:text-white transition">
+                <a href="https://www.tiktok.com" class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center hover:bg-gray-600 hover:text-white transition">
                   <i class="fab fa-tiktok"></i>
                 </a>
-                <a href="#" class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center hover:bg-red-600 hover:text-white transition">
+                <a href="https://www.youtube.com" class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center hover:bg-gray-600 hover:text-white transition">
                   <i class="fab fa-youtube"></i>
                 </a>
               </div>
