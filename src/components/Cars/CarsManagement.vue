@@ -329,7 +329,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 
-// === REFS ===
 const loading = ref(false)
 const uploadingAdditional = ref(false)
 const cars = ref([])
@@ -353,142 +352,32 @@ const form = ref({
 
 const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
 
-// === COMPUTED ===
+// COMPUTED COUNTS
 const availableCount = computed(() => cars.value.filter(c => c.status === 'available').length)
 const reservedCount = computed(() => cars.value.filter(c => c.status === 'reserved').length)
 
+// DUPLICATE CHECK — SAKTO NA ‘TO (Make + Model + Year + Variant)
 const isDuplicateCar = computed(() => {
   if (!form.value.make?.trim() || !form.value.model?.trim()) return false
+
   const newKey = `${form.value.make} ${form.value.model} ${form.value.year || ''} ${form.value.variant || ''}`.trim().toLowerCase()
+
   return cars.value.some(car => {
-    if (isEditing.value && car.id === editId.value) return false
+    if (isEditing.value && car.id === editId.value) return false // huwag i-count yung sarili
     const existingKey = `${car.make} ${car.model} ${car.year || ''} ${car.variant || ''}`.trim().toLowerCase()
     return existingKey === newKey
   })
 })
 
-// === UTILITIES ===
-const showToast = (message, type = 'success') => {
-  toast.value = { show: true, message, type }
-  setTimeout(() => toast.value.show = false, 4000)
-}
-
-const formatDate = (d) => new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-
+// IMAGE HANDLING — TAMA NA, DIRECT BASE64
 const getCarImage = (imageData) => {
   if (!imageData) return '/default-car.jpg'
-  if (imageData.startsWith('data:image') || imageData.startsWith('http')) return imageData
+  if (imageData.startsWith('data:image')) return imageData
+  if (imageData.startsWith('http')) return imageData
   return '/default-car.jpg'
 }
 
-// === IMAGE COMPRESSION + BASE64 CONVERSION (BEST ONE) ===
-const compressAndConvertToBase64 = (file, quality = 0.75) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => {
-      const img = new Image()
-      img.src = reader.result
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        const MAX_WIDTH = 1200
-        let { width, height } = img
-
-        if (width > MAX_WIDTH) {
-          height = (height * MAX_WIDTH) / width
-          width = MAX_WIDTH
-        }
-
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-        ctx.drawImage(img, 0, 0, width, height)
-        resolve(canvas.toDataURL('image/jpeg', quality)) // smaller + optimized
-      }
-    }
-    reader.onerror = () => resolve(null)
-  })
-}
-
-// === MAIN IMAGE UPLOAD (CLIENT-SIDE BASE64) ===
-const handleImageUpload = async (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-
-  if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
-    showToast('Only JPG/PNG allowed!', 'error')
-    return
-  }
-  if (file.size > 3 * 1024 * 1024) { // 3MB raw limit
-    showToast('Image too big! Max 3MB', 'error')
-    return
-  }
-
-  loading.value = true
-  try {
-    const base64 = await compressAndConvertToBase64(file, 0.8)
-    if (!base64) throw new Error('Failed')
-
-    form.value.main_image = base64
-    previewImage.value = base64
-    showToast('Main image ready!', 'success')
-
-    // Clear file input
-    e.target.value = ''
-  } catch (err) {
-    showToast('Failed to process main image', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-// === MULTIPLE IMAGES UPLOAD (CLIENT-SIDE BASE64) ===
-const handleMultipleUpload = async (e) => {
-  const files = Array.from(e.target.files)
-    .filter(f => ['image/jpeg', 'image/jpg', 'image/png'].includes(f.type) && f.size <= 3 * 1024 * 1024)
-
-  if (files.length === 0) {
-    showToast('No valid images selected', 'error')
-    return
-  }
-
-  uploadingAdditional.value = true
-
-  for (const file of files) {
-    try {
-      const base64 = await compressAndConvertToBase64(file, 0.75)
-      if (base64) {
-        additionalImages.value.push({
-          url: base64,
-          is_primary: additionalImages.value.length === 0 && !form.value.main_image ? 1 : 0
-        })
-        showToast(`${file.name} added!`)
-      }
-    } catch (err) {
-      showToast(`Failed: ${file.name}`, 'error')
-    }
-  }
-
-  uploadingAdditional.value = false
-  e.target.value = '' // clear input
-}
-
-// === IMAGE ACTIONS ===
-const removeAdditionalImage = (index) => {
-  additionalImages.value.splice(index, 1)
-}
-
-const setAsPrimary = (index) => {
-  additionalImages.value.forEach((img, i) => {
-    img.is_primary = i === index ? 1 : 0
-  })
-  const selected = additionalImages.value[index]
-  form.value.main_image = selected.url
-  previewImage.value = selected.url
-  showToast('Set as main image')
-}
-
-// === WARRANTY ===
+// WARRANTY AUTO CALC
 const calculateWarrantyEnd = () => {
   if (!form.value.warranty_start_date || !form.value.warranty_period) {
     form.value.warranty_end_date = ''
@@ -500,12 +389,114 @@ const calculateWarrantyEnd = () => {
   form.value.warranty_end_date = end.toISOString().split('T')[0]
 }
 
-// === CRUD OPERATIONS ===
+const formatDate = (d) => new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+
+const showToast = (message, type = 'success') => {
+  toast.value = { show: true, message, type }
+  setTimeout(() => toast.value.show = false, 4000)
+}
+
+// IMAGE UPLOAD — MAY USER HEADER NA!
+const handleImageUpload = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+
+  if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+    showToast('JPG/PNG only!', 'error')
+    return
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('Max 2MB!', 'error')
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('main_image_file', file)
+
+  // IMPORTANT: Send user info
+  const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+  if (!user.id) {
+    showToast('Please login again', 'error')
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await fetch(`${API_BASE}/upload-car-image`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-User': JSON.stringify(user) // ← IMPORTANT!
+      }
+    })
+
+    const data = await res.json()
+    if (data.status === 'success' && data.url) {
+      form.value.main_image = data.url
+      previewImage.value = data.url
+      showToast('Image uploaded!')
+    } else {
+      showToast('Upload failed', 'error')
+    }
+  } catch (err) {
+    showToast('Upload error', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleMultipleUpload = async (e) => {
+  const files = Array.from(e.target.files).filter(f => ['image/jpeg','image/jpg','image/png'].includes(f.type) && f.size <= 2*1024*1024)
+  if (files.length === 0) return
+
+  uploadingAdditional.value = true
+  const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+
+  for (const file of files) {
+    const fd = new FormData()
+    fd.append('additional_image', file)  // importante ito sa backend
+
+    try {
+      const res = await fetch(`${API_BASE}/upload-car-image`, {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-User': JSON.stringify(user) }
+      })
+      const data = await res.json()
+      if (data.status === 'success' && data.url) {
+        additionalImages.value.push({
+          url: data.url,
+          is_primary: additionalImages.value.length === 0 && !form.value.main_image ? 1 : 0
+        })
+        showToast(`${file.name} uploaded!`)
+      }
+    } catch (err) {
+      showToast(`Failed: ${file.name}`, 'error')
+    }
+  }
+  uploadingAdditional.value = false
+  e.target.value = '' // clear input
+}
+
+const removeAdditionalImage = (index) => {
+  additionalImages.value.splice(index, 1)
+}
+
+const setAsPrimary = (index) => {
+  additionalImages.value.forEach(img, i => {
+    img.is_primary = i === index ? 1 : 0
+  }),
+  form.value.main_image = additionalImages.value[index].url,
+  previewImage.value = additionalImages.value[index].url
+}
+
+// CRUD OPERATIONS — LAHAT MAY DUPLICATE CHECK
 const fetchCars = async () => {
   loading.value = true
   try {
-    const stored = localStorage.getItem('rz_user') || localStorage.getItem('user') || localStorage.getItem('authUser')
-    const user = stored ? JSON.parse(stored) : null
+    // Kunin yung current logged in user
+    const storedUser = localStorage.getItem('user') || localStorage.getItem('authUser')
+    const user = storedUser ? JSON.parse(storedUser) : null
 
     if (!user) {
       showToast('Please login first', 'error')
@@ -513,29 +504,41 @@ const fetchCars = async () => {
       return
     }
 
+    // Ipakita sa console at UI para sure
+    console.log('Fetching cars for user:', user)
     currentUserInfo.value = {
-      name: user.name || user.email || 'User',
-      role: user.role || 'dealer',
-      dealer_id: user.dealer_id || '—'
+      name: user.name || user.email,
+      role: user.role,
+      dealer_id: user.dealer_id || 'All (Admin)'
     }
 
-    const headers = { 'Content-Type': 'application/json' }
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+
+    // Admin = walang X-User header → makikita lahat
+    // Dealer = may X-User → ififilter sa backend
     if (user.role !== 'admin') {
       headers['X-User'] = JSON.stringify(user)
     }
 
-    const res = await fetch(`${API_BASE}/searchcars`, { headers })
+    const res = await fetch(`${API_BASE}/searchcars`, {
+      method: 'GET',
+      headers
+    })
+
     const data = await res.json()
 
     if (data.status === 'success') {
       cars.value = data.cars || []
+      console.log(`Loaded ${cars.value.length} car(s) →`, user.role === 'admin' ? 'ALL (Admin)' : `Dealer ID: ${user.dealer_id}`)
     } else {
       cars.value = []
       showToast('No cars found', 'error')
     }
   } catch (err) {
-    console.error(err)
-    showToast('Failed to load cars', 'error')
+    console.error('Fetch cars failed:', err)
+    showToast('Failed to load inventory', 'error')
     cars.value = []
   } finally {
     loading.value = false
@@ -544,7 +547,7 @@ const fetchCars = async () => {
 
 const createCar = async () => {
   if (isDuplicateCar.value) {
-    showToast('This vehicle already exists!', 'error')
+    showToast('Vehicle already exists!', 'error')
     return
   }
 
@@ -552,31 +555,32 @@ const createCar = async () => {
   try {
     const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
 
+    // ← ETO NA ANG TAMANG PARAAN (PINAKA-IMPORTANTENG LINYA!)
     const payload = {
       ...form.value,
       additional_images: additionalImages.value.map(img => ({
         url: img.url,
-        is_primary: img.is_primary ? 1 : 0
+        is_primary: img.is_primary ? 1 : 0   // o kaya !!img.is_primary
       }))
     }
 
     const res = await fetch(`${API_BASE}/createcars`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User': JSON.stringify(user)
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-User': JSON.stringify(user) 
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload)   // ← DAPAT PAYLOAD, HINDI FORM.VALUE
     })
 
     const data = await res.json()
     if (data.status === 'success') {
-      showToast('Vehicle added successfully!', 'success')
+      showToast('Car + ALL IMAGES saved!', 'success')
       resetForm()
-      additionalImages.value = []
+      additionalImages.value = []   // clear din ang additional images
       await fetchCars()
     } else {
-      showToast(data.message || 'Save failed', 'error')
+      showToast(data.message || 'Failed', 'error')
     }
   } catch (err) {
     console.error(err)
@@ -606,21 +610,21 @@ const updateCar = async () => {
 
     const res = await fetch(`${API_BASE}/updatecars/${editId.value}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User': JSON.stringify(user)
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-User': JSON.stringify(user) 
       },
       body: JSON.stringify(payload)
     })
 
     if (res.ok) {
-      showToast('Vehicle updated!', 'success')
+      showToast('Car & photos updated!', 'success')
       cancelEdit()
       await fetchCars()
     } else {
       showToast('Update failed', 'error')
     }
-  } catch (err) {
+  } catch {
     showToast('Network error', 'error')
   } finally {
     loading.value = false
@@ -628,7 +632,7 @@ const updateCar = async () => {
 }
 
 const deleteCar = async (id) => {
-  if (!confirm('Permanently delete this vehicle?')) return
+  if (!confirm('Delete this vehicle?')) return
   try {
     const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
     await fetch(`${API_BASE}/deletecars/${id}`, {
@@ -648,8 +652,9 @@ const editCar = (car) => {
   form.value = { ...car }
   previewImage.value = car.main_image || ''
 
+  // ← AYUSIN MO RIN ‘TO (image_url, hindi url)
   additionalImages.value = (car.images || []).map(img => ({
-    url: img.image_url || img.url,
+    url: img.image_url,
     is_primary: img.is_primary ? 1 : 0
   }))
 
@@ -659,8 +664,8 @@ const editCar = (car) => {
 const cancelEdit = () => {
   isEditing.value = false
   editId.value = null
-  resetForm()
   additionalImages.value = []
+  resetForm()
 }
 
 const resetForm = () => {
@@ -673,7 +678,6 @@ const resetForm = () => {
   additionalImages.value = []
 }
 
-// === MOUNT ===
 onMounted(() => {
   fetchCars()
 })

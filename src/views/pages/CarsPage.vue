@@ -274,7 +274,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed} from 'vue'
+import { ref, onMounted, watch, computed, onBeforeUnmount} from 'vue'
 import { debounce } from 'lodash-es'
 import { useRouter } from 'vue-router'
 import AppointmentModal from './AppointmentModal.vue'
