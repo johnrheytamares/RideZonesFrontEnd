@@ -18,12 +18,12 @@
       <!-- LEFT: STICKY FILTERS (Desktop: Fixed | Mobile: Collapsible) -->
       <aside class="hidden md:block w-80 lg:w-96 bg-white shadow-2xl border-r border-gray-200 fixed inset-y-0 left-0 z-40 pt-10 overflow-y-auto">
         <div class="p-6 space-y-6">
-          <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-red-600 pb-3 inline-block">Filter Cars</h2>
+          <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-red-600 inline-block">Filter Cars</h2>
 
           <!-- Make -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Make</label>
-            <select v-model="filters.make" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
+            <select v-model="filters.make" class="w-full text-black border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
               <option value="">All Makes</option>
               <option class="text-black" v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
             </select>
@@ -32,7 +32,7 @@
           <!-- Year -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
-            <select v-model="filters.year" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
+            <select v-model="filters.year" class="w-full text-black border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
               <option value="">All Years</option>
               <option class="text-black" v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
