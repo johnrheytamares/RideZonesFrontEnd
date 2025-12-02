@@ -201,25 +201,36 @@
 
             <!-- LEFT: HORIZONTAL GALLERY (ALL IMAGES) -->
             <div class="relative h-64 md:h-full min-h-64 bg-gray-900 overflow-hidden">
-              <div class="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full">
-                <div v-for="(imageUrl, index) in allImages" 
-                     :key="index"
-                     @click="openLightbox(index)"
-                     class="flex-shrink-0 w-full h-full snap-center relative group cursor-zoom-in">
-                  <img :src="imageUrl" class="w-full h-full object-cover" alt="Car image" />
-                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition flex items-center justify-center">
-                    <i class="fas fa-expand text-white text-5xl opacity-0 group-hover:opacity-100 transition"></i>
-                  </div>
-                  <div class="absolute bottom-4 right-4 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur">
-                    {{ index + 1 }} / {{ totalImages }}
-                  </div>
-                  <div v-if="index === 0 && selectedCarDetail.main_image" 
-                       class="absolute top-4 left-4 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                    MAIN
-                  </div>
+            <div class="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full">
+              <div v-for="(imageUrl, index) in allImages" 
+                  :key="index"
+                  @click="openLightbox(index)"
+                  class="flex-shrink-0 w-full h-full snap-center relative group cursor-zoom-in bg-black px-8 py-12">
+
+                <img 
+                  :src="imageUrl" 
+                  class="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg"
+                  alt="Car image"
+                />
+
+                <!-- Hover Effect -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500 rounded-lg"></div>
+                
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
+                  <i class="fas fa-expand text-white text-7xl drop-shadow-2xl"></i>
+                </div>
+
+                <!-- Counter -->
+                <div class="absolute bottom-6 right-6 bg-white/20 backdrop-blur-md text-white px-5 py-3 rounded-full text-lg font-bold border border-white/30">
+                  {{ index + 1 }} / {{ totalImages }}
+                </div>
+
+                <div v-if="index === 0" 
+                    class="absolute top-6 left-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2 rounded-full text-sm font-bold shadow-2xl border border-white/20">
+                  MAIN IMAGE
                 </div>
               </div>
-
+            </div>
               <!-- Title Overlay -->
               <div class="absolute bottom-5 left-5 text-white pointer-events-none">
                 <h1 class="text-3xl md:text-4xl font-bold drop-shadow-2xl">{{ selectedCarDetail.make }} {{ selectedCarDetail.model }}</h1>
