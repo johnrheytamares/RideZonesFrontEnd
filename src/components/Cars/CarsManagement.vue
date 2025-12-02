@@ -397,85 +397,70 @@ const showToast = (message, type = 'success') => {
 }
 
 // IMAGE UPLOAD — MAY USER HEADER NA!
+// REPLACE YOUR handleImageUpload AND handleMultipleUpload WITH THESE:
+const compressAndConvertToBase64 = (file, quality = 0.8) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => {
+      const img = new Image()
+      img.src = reader.result
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 1400
+        let { width, height } = img
+        if (width > MAX_WIDTH) {
+          height = (height * MAX_WIDTH) / width
+          width = MAX_WIDTH
+        }
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+    }
+    reader.onerror = () => resolve(null)
+  })
+}
+
 const handleImageUpload = async (e) => {
   const file = e.target.files[0]
   if (!file) return
-
-  if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
-    showToast('JPG/PNG only!', 'error')
-    return
-  }
-  if (file.size > 2 * 1024 * 1024) {
-    showToast('Max 2MB!', 'error')
-    return
-  }
-
-  const formData = new FormData()
-  formData.append('main_image_file', file)
-
-  // IMPORTANT: Send user info
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  if (!user.id) {
-    showToast('Please login again', 'error')
-    return
-  }
+  if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) return showToast('JPG/PNG only!', 'error')
+  if (file.size > 3 * 1024 * 1024) return showToast('Max 3MB!', 'error')
 
   loading.value = true
-  try {
-    const res = await fetch(`${API_BASE}/upload-car-image`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'X-User': JSON.stringify(user) // ← IMPORTANT!
-      }
-    })
-
-    const data = await res.json()
-    if (data.status === 'success' && data.url) {
-      form.value.main_image = data.url
-      previewImage.value = data.url
-      showToast('Image uploaded!')
-    } else {
-      showToast('Upload failed', 'error')
-    }
-  } catch (err) {
-    showToast('Upload error', 'error')
-  } finally {
-    loading.value = false
+  const base64 = await compressAndConvertToBase64(file, 0.8)
+  if (base64) {
+    form.value.main_image = base64
+    previewImage.value = base64
+    showToast('Main image ready!')
+  } else {
+    showToast('Failed!', 'error')
   }
+  loading.value = false
+  e.target.value = ''
 }
 
 const handleMultipleUpload = async (e) => {
-  const files = Array.from(e.target.files).filter(f => ['image/jpeg','image/jpg','image/png'].includes(f.type) && f.size <= 2*1024*1024)
-  if (files.length === 0) return
+  const files = Array.from(e.target.files)
+    .filter(f => ['image/jpeg', 'image/jpg', 'image/png'].includes(f.type) && f.size <= 3 * 1024 * 1024)
+  if (!files.length) return showToast('No valid images!', 'error')
 
   uploadingAdditional.value = true
-  const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
-
   for (const file of files) {
-    const fd = new FormData()
-    fd.append('additional_image', file)  // importante ito sa backend
-
-    try {
-      const res = await fetch(`${API_BASE}/upload-car-image`, {
-        method: 'POST',
-        body: fd,
-        headers: { 'X-User': JSON.stringify(user) }
+    const base64 = await compressAndConvertToBase64(file, 0.75)
+    if (base64) {
+      additionalImages.value.push({
+        url: base64,
+        is_primary: additionalImages.value.length === 0 && !form.value.main_image ? 1 : 0
       })
-      const data = await res.json()
-      if (data.status === 'success' && data.url) {
-        additionalImages.value.push({
-          url: data.url,
-          is_primary: additionalImages.value.length === 0 && !form.value.main_image ? 1 : 0
-        })
-        showToast(`${file.name} uploaded!`)
-      }
-    } catch (err) {
-      showToast(`Failed: ${file.name}`, 'error')
+      showToast(`${file.name} added!`)
     }
   }
   uploadingAdditional.value = false
-  e.target.value = '' // clear input
+  e.target.value = ''
 }
 
 const removeAdditionalImage = (index) => {
