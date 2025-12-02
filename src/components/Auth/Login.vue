@@ -80,26 +80,9 @@
         </button>
       </form>
 
-      <!-- Divider + Google (optional) -->
-      <div class="divider"><span class="divider-text">or continue with</span></div>
       
-      <div class="google-login mt-4 flex justify-center">
-        <!-- DITO NA YUNG GOOGLE BUTTON -->
-        <div id="g_id_onload"
-            data-client_id="1090968034876-fh3nbirtjc4sgef6itbbn50pggo1j3l0.apps.googleusercontent.com"
-            data-callback="handleGoogleResponse"
-            data-auto_prompt="false">
-        </div>
-        
-        <div class="g_id_signin"
-            data-type="standard"
-            data-size="large"
-            data-theme="outline"
-            data-text="signin_with"
-            data-shape="rectangular"
-            data-logo_alignment="left">
-        </div>
-      </div>
+      <div class="g-recaptcha" data-sitekey="6Lfi7h0sAAAAAKJGT6TPB09Ivo9qw-9pSzA5Yx1u"></div> <!-- reCAPTCHA widget -->
+
       <!-- Register Link -->
       <div class="registration-section">
         <p>Don't have an account? <router-link to="/register" class="login-link">Sign Up</router-link></p>
@@ -154,12 +137,19 @@ const openForgotModal = ref(false)
 // ================== EMAIL/PASSWORD LOGIN ==================
 const handleLogin = async () => {
   if (!email.value || !password.value) {
-    errorMessage.value = 'Email and password are required'
-    return
+    errorMessage.value = 'Email and password are required';
+    return;
   }
 
-  isLoading.value = true
-  errorMessage.value = ''
+  isLoading.value = true;
+  errorMessage.value = '';
+
+  const token = grecaptcha.getResponse(); // Get the token from the widget
+  if (!token) {
+    errorMessage.value = 'Please complete the reCAPTCHA';
+    isLoading.value = false;
+    return;
+  }
 
   try {
     const response = await fetch('https://ridezonesbackends-dzei.onrender.com/login', {
@@ -167,36 +157,38 @@ const handleLogin = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email.value.trim(),
-        password: password.value
+        password: password.value,
+        token: token  
       })
-    })
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (response.ok && data.status === 'success') {
-      const user = data.user
-      const role = (user.role || '').toLowerCase()
+      const user = data.user;
+      const role = (user.role || '').toLowerCase();
 
       if (!['admin', 'dealer'].includes(role)) {
-        errorMessage.value = 'Access denied: Only Admin and Dealer accounts can log in.'
-        isLoading.value = false
-        return
+        errorMessage.value = 'Access denied: Only Admin and Dealer accounts can log in.';
+        return;
       }
 
-      login(user)
-      localStorage.setItem('authUser', JSON.stringify(user))
-      window.authUser = user
+      login(user);
+      localStorage.setItem('authUser', JSON.stringify(user));
+      window.authUser = user;
 
-      setTimeout(() => router.push('/dashboard'), 600)
+      setTimeout(() => router.push('/dashboard'), 600);
     } else {
-      errorMessage.value = data.message || 'Invalid email or password'
+      errorMessage.value = data.message || 'Invalid email or password';
     }
   } catch (err) {
-    errorMessage.value = 'Server is down or no internet connection.'
+    errorMessage.value = 'Server is down or no internet connection.';
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
+    // Optional: Reset reCAPTCHA for re-attempts
+    grecaptcha.reset();
   }
-}
+};
 
 // ================== GOOGLE LOGIN — 100% WORKING VERSION ==================
 // IMPORTANT: Ginawa nating GLOBAL function para makita ni Google script
