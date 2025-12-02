@@ -52,7 +52,7 @@
 
           <!-- Transmission -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Transmission</label>
+            <label class="block text-sm font-medium text-gray-700 ">Transmission</label>
             <div class="grid grid-cols-2 gap-3">
               <button @click="filters.transmission = 'automatic'"
                 :class="filters.transmission === 'automatic' ? 'bg-red-600 text-white' : 'bg-gray-300'"
@@ -76,13 +76,13 @@
 
           <!-- Search -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <label class="block text-sm font-medium text-gray-700">Search</label>
             <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full border rounded-lg px-4 py-3 text-black focus:ring-2 focus:ring-red-200 outline-none">
           </div>
 
           <!-- Buttons -->
-          <div class="flex">
-            <button @click="resetFilters" class="flex-1 bg-gray-200 py-3 rounded-lg font-bold hover:bg-gray-500 transition">Reset</button>
+          <div class="flex gap-3">
+            <button @click="resetFilters" class="flex-1 bg-gray-200 py-3 rounded-lg font-bold hover:bg-gray-300 transition">Reset</button>
             <button @click="fetchCars" class="flex-1 bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">Apply Filters</button>
           </div>
         </div>
