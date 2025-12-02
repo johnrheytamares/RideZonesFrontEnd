@@ -544,7 +544,7 @@ const createCar = async () => {
     const payload = {
       ...form.value,
       additional_images: additionalImages.value.map(img => ({
-        url: img.url,
+        url: img.image_url,
         is_primary: img.is_primary ? 1 : 0   // o kaya !!img.is_primary
       }))
     }

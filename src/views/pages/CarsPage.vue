@@ -209,7 +209,6 @@
               <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition opacity-0 group-hover:opacity-100 flex items-center justify-center">
                 <i class="fas fa-expand text-white text-4xl opacity-0 group-hover:opacity-100 transition"></i>
               </div>
-              <div class="absolute bottom-4 left-4 bg-emerald-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg">MAIN</div>
             </div>
 
             <!-- Additional Images (clickable) -->
@@ -235,8 +234,82 @@
 
         <!-- RIGHT SIDE (DETAILS) - SAME LANG, HINDI NA BABAGUHIN -->
         <div class="p-6 md:p-8 space-y-6">
-          <!-- ... lahat ng details mo dito ... -->
-          <!-- (hindi ko na ulit kinopya para hindi mahaba) -->
+
+          <!-- Price & Status -->
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-3xl md:text-4xl font-bold text-red-600">₱{{ Number(selectedCarDetail.price).toLocaleString() }}</p>
+              <p class="text-sm text-gray-500 mt-1">All fees included</p>
+            </div>
+            <span class="px-4 py-2 rounded-full text-sm font-bold shadow"
+                  :class="selectedCarDetail.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+              {{ selectedCarDetail.status.toUpperCase() }}
+            </span>
+          </div>
+
+          <!-- Key Specs — Compact grid -->
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="bg-gray-50 p-4 rounded-xl">
+              <p class="text-gray-500">Mileage</p>
+              <p class="font-bold text-gray-800">{{ selectedCarDetail.mileage?.toLocaleString() || '—' }} km</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl">
+              <p class="text-gray-500">Transmission</p>
+              <p class="font-bold text-gray-800">{{ selectedCarDetail.transmission || '—' }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl">
+              <p class="text-gray-500">Fuel Type</p>
+              <p class="font-bold text-gray-800">{{ selectedCarDetail.fuel_type || '—' }}</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl">
+              <p class="text-gray-500">Color</p>
+              <p class="font-bold text-gray-800">{{ selectedCarDetail.color || '—' }}</p>
+            </div>
+          </div>
+
+          <!-- Warranty Badge — Elegant & Compact -->
+          <div v-if="selectedCarDetail.warranty_end_date" 
+               class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-5 rounded-2xl text-center shadow-lg">
+            <p class="text-sm opacity-90 font-medium">Warranty Coverage</p>
+            <p class="text-2xl font-bold mt-1">{{ formatDate(selectedCarDetail.warranty_end_date) }}</p>
+            <p class="text-xs mt-1 opacity-80">{{ selectedCarDetail.warranty_period }} months remaining</p>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
+              <i class="fas fa-info-circle text-red-600"></i> Description
+            </h3>
+            <p class="text-gray-700 leading-relaxed text-sm">
+              {{ selectedCarDetail.description || 'No description available.' }}
+            </p>
+          </div>
+
+          <!-- Service History — Clean list -->
+          <div v-if="selectedCarDetail.service_history">
+            <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
+              <i class="fas fa-tools text-red-600"></i> Service History
+            </h3>
+            <div class="space-y-2 text-sm">
+              <div v-for="(line, i) in selectedCarDetail.service_history.split('\n').filter(l => l.trim())" 
+                   :key="i" class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                <span class="text-red-600 font-bold text-xs mt-0.5">{{ i + 1 }}</span>
+                <span class="text-gray-700">{{ line.trim() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons — Perfect size -->
+          <div class="flex gap-3 pt-4">
+            <button @click="openModal(selectedCarDetail.id); showDetailsModal = false"
+                    class="flex-1 bg-red-600 text-white py-3.5 rounded-xl font-bold text-base hover:bg-red-700 transition shadow-lg">
+              <i class="fas fa-car mr-2"></i> Book Test Drive
+            </button>
+            <button @click="showDetailsModal = false" 
+                    class="flex-1 bg-gray-200 text-gray-800 py-3.5 rounded-xl font-bold text-base hover:bg-gray-300 transition">
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -337,28 +410,49 @@ const openDetailsModal = (car) => {
 }
 
 const allImages = computed(() => {
+  if (!selectedCarDetail.value) return []
+  
   const images = []
-  if (selectedCarDetail.value?.main_image) {
+  
+  // Main image palagi una
+  if (selectedCarDetail.value.main_image) {
     images.push(getCarImage(selectedCarDetail.value.main_image))
   }
-  if (selectedCarDetail.value?.images?.length) {
-    selectedCarDetail.value.images.forEach(img => {
-      images.push(img.image_url || img.url)
-    })
-  }
+  
+  // Additional images (safe kahit null/undefined)
+  const additional = selectedCarDetail.value.images || []
+  additional.forEach(img => {
+    const url = img.image_url || img.url || ''
+    if (url) images.push(getImage(url))
+  })
+  
   return images
 })
 
+const totalImages = computed(() => allImages.value.length)
+
+// Safe get image
+const getImage = (path) => {
+  if (!path) return '/default-car.jpg'
+  if (path.startsWith('data:image') || path.startsWith('http')) return path
+  return '/default-car.jpg'
+}
+
 const currentLightboxImage = computed(() => allImages.value[lightboxIndex.value] || '/default-car.jpg')
 
-const openLightbox = (index) => {
-  lightboxIndex.value = index
-  lightboxOpen.value = true
+const lightboxPrev = () => {
+  if (lightboxIndex.value > 0) {
+    lightboxIndex.value--
+  } else {
+    lightboxIndex.value = allImages.value.length - 1
+  }
 }
 
 const lightboxNext = () => {
   if (lightboxIndex.value < allImages.value.length - 1) {
     lightboxIndex.value++
+  } else {
+    lightboxIndex.value = 0
   }
 }
 
