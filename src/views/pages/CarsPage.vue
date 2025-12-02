@@ -185,158 +185,145 @@
 
     <!-- LUXURY CAR DETAILS MODAL -->
      <!-- LUXURY & ELEGANT CAR DETAILS MODAL — PERFECT SIZE, SOBRANG CLASSY! -->
-<!-- FULLSCREEN LIGHTBOX + HORIZONTAL GALLERY (BOTH IN ONE!) -->
-<teleport to="body">
-  <!-- 1. DETAILS MODAL (with clickable images) -->
-  <div v-if="showDetailsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-    <div @click="showDetailsModal = false" class="absolute inset-0"></div>
+    <!-- FULLSCREEN LIGHTBOX + HORIZONTAL GALLERY (BOTH IN ONE!) -->
+    <teleport to="body">
+      <!-- 1. DETAILS MODAL -->
+      <div v-if="showDetailsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div @click="showDetailsModal = false" class="absolute inset-0"></div>
 
-    <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[88vh] overflow-y-auto">
-      <button @click="showDetailsModal = false" 
-              class="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-red-600 transition">
-        <i class="fas fa-times text-xl"></i>
-      </button>
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[88vh] overflow-y-auto">
+          <button @click="showDetailsModal = false" 
+                  class="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-red-600 transition">
+            <i class="fas fa-times text-xl"></i>
+          </button>
 
-      <div v-if="selectedCarDetail" class="grid md:grid-cols-2 gap-0">
+          <div v-if="selectedCarDetail" class="grid md:grid-cols-2 gap-0">
 
-        <!-- LEFT: CLICKABLE HORIZONTAL GALLERY -->
-        <div class="relative h-64 md:h-full min-h-64 bg-gray-900 overflow-hidden cursor-pointer">
-          <div class="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full">
-            
-            <!-- Main Image (clickable) -->
-            <div @click="openLightbox(0)" class="flex-shrink-0 w-full h-full snap-center relative group">
-              <img :src="getCarImage(selectedCarDetail.main_image)" class="w-full h-full object-cover" />
-              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition opacity-0 group-hover:opacity-100 flex items-center justify-center">
-                <i class="fas fa-expand text-white text-4xl opacity-0 group-hover:opacity-100 transition"></i>
+            <!-- LEFT: HORIZONTAL GALLERY (ALL IMAGES) -->
+            <div class="relative h-64 md:h-full min-h-64 bg-gray-900 overflow-hidden">
+              <div class="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full">
+                <div v-for="(imageUrl, index) in allImages" 
+                     :key="index"
+                     @click="openLightbox(index)"
+                     class="flex-shrink-0 w-full h-full snap-center relative group cursor-zoom-in">
+                  <img :src="imageUrl" class="w-full h-full object-cover" alt="Car image" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition flex items-center justify-center">
+                    <i class="fas fa-expand text-white text-5xl opacity-0 group-hover:opacity-100 transition"></i>
+                  </div>
+                  <div class="absolute bottom-4 right-4 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-bold backdrop-blur">
+                    {{ index + 1 }} / {{ totalImages }}
+                  </div>
+                  <div v-if="index === 0 && selectedCarDetail.main_image" 
+                       class="absolute top-4 left-4 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                    MAIN
+                  </div>
+                </div>
+              </div>
+
+              <!-- Title Overlay -->
+              <div class="absolute bottom-5 left-5 text-white pointer-events-none">
+                <h1 class="text-3xl md:text-4xl font-bold drop-shadow-2xl">{{ selectedCarDetail.make }} {{ selectedCarDetail.model }}</h1>
+                <p class="text-lg md:text-xl opacity-90 mt-1 drop-shadow-lg">{{ selectedCarDetail.variant || '' }} • {{ selectedCarDetail.year }}</p>
               </div>
             </div>
 
-            <!-- Additional Images (clickable) -->
-            <div v-for="(img, index) in selectedCarDetail.images || []" :key="img.id || index"
-                 @click="openLightbox(index + 1)"
-                 class="flex-shrink-0 w-full h-full snap-center relative group">
-              <img :src="img.image_url || img.url" class="w-full h-full object-cover" />
-              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition opacity-0 group-hover:opacity-100 flex items-center justify-center">
-                <i class="fas fa-expand text-white text-4xl opacity-0 group-hover:opacity-100 transition"></i>
+            <!-- RIGHT: DETAILS -->
+            <div class="p-6 md:p-8 space-y-6">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-3xl md:text-4xl font-bold text-red-600">₱{{ Number(selectedCarDetail.price).toLocaleString() }}</p>
+                  <p class="text-sm text-gray-500 mt-1">All fees included</p>
+                </div>
+                <span class="px-4 py-2 rounded-full text-sm font-bold shadow"
+                      :class="selectedCarDetail.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                  {{ selectedCarDetail.status.toUpperCase() }}
+                </span>
               </div>
-              <div class="absolute top-4 right-4 bg-black/60 text-white text-xs px-3 py-1 rounded-full backdrop-blur">
-                {{ index + 2 }} / {{ totalImages }}
+
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div class="bg-gray-50 p-4 rounded-xl">
+                  <p class="text-gray-500">Mileage</p>
+                  <p class="font-bold text-gray-800">{{ selectedCarDetail.mileage?.toLocaleString() || '—' }} km</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl">
+                  <p class="text-gray-500">Transmission</p>
+                  <p class="font-bold text-gray-800">{{ selectedCarDetail.transmission || '—' }}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl">
+                  <p class="text-gray-500">Fuel Type</p>
+                  <p class="font-bold text-gray-800">{{ selectedCarDetail.fuel_type || '—' }}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl">
+                  <p class="text-gray-500">Color</p>
+                  <p class="font-bold text-gray-800">{{ selectedCarDetail.color || '—' }}</p>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Title Overlay -->
-          <div class="absolute bottom-5 left-5 text-white pointer-events-none">
-            <h1 class="text-3xl md:text-4xl font-bold drop-shadow-2xl">{{ selectedCarDetail.make }} {{ selectedCarDetail.model }}</h1>
-            <p class="text-lg md:text-xl opacity-90 mt-1 drop-shadow-lg">{{ selectedCarDetail.variant || '' }} • {{ selectedCarDetail.year }}</p>
-          </div>
-        </div>
+              <div v-if="selectedCarDetail.warranty_end_date" 
+                   class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-5 rounded-2xl text-center shadow-lg">
+                <p class="text-sm opacity-90 font-medium">Warranty Coverage</p>
+                <p class="text-2xl font-bold mt-1">{{ formatDate(selectedCarDetail.warranty_end_date) }}</p>
+                <p class="text-xs mt-1 opacity-80">{{ selectedCarDetail.warranty_period }} months remaining</p>
+              </div>
 
-        <!-- RIGHT SIDE (DETAILS) - SAME LANG, HINDI NA BABAGUHIN -->
-        <div class="p-6 md:p-8 space-y-6">
+              <div>
+                <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
+                  <i class="fas fa-info-circle text-red-600"></i> Description
+                </h3>
+                <p class="text-gray-700 leading-relaxed text-sm">
+                  {{ selectedCarDetail.description || 'No description available.' }}
+                </p>
+              </div>
 
-          <!-- Price & Status -->
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-3xl md:text-4xl font-bold text-red-600">₱{{ Number(selectedCarDetail.price).toLocaleString() }}</p>
-              <p class="text-sm text-gray-500 mt-1">All fees included</p>
-            </div>
-            <span class="px-4 py-2 rounded-full text-sm font-bold shadow"
-                  :class="selectedCarDetail.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
-              {{ selectedCarDetail.status.toUpperCase() }}
-            </span>
-          </div>
+              <div v-if="selectedCarDetail.service_history">
+                <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
+                  <i class="fas fa-tools text-red-600"></i> Service History
+                </h3>
+                <div class="space-y-2 text-sm">
+                  <div v-for="(line, i) in selectedCarDetail.service_history.split('\n').filter(l => l.trim())" 
+                       :key="i" class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                    <span class="text-red-600 font-bold text-xs mt-0.5">{{ i + 1 }}</span>
+                    <span class="text-gray-700">{{ line.trim() }}</span>
+                  </div>
+                </div>
+              </div>
 
-          <!-- Key Specs — Compact grid -->
-          <div class="grid grid-cols-2 gap-4 text-sm">
-            <div class="bg-gray-50 p-4 rounded-xl">
-              <p class="text-gray-500">Mileage</p>
-              <p class="font-bold text-gray-800">{{ selectedCarDetail.mileage?.toLocaleString() || '—' }} km</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-xl">
-              <p class="text-gray-500">Transmission</p>
-              <p class="font-bold text-gray-800">{{ selectedCarDetail.transmission || '—' }}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-xl">
-              <p class="text-gray-500">Fuel Type</p>
-              <p class="font-bold text-gray-800">{{ selectedCarDetail.fuel_type || '—' }}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-xl">
-              <p class="text-gray-500">Color</p>
-              <p class="font-bold text-gray-800">{{ selectedCarDetail.color || '—' }}</p>
-            </div>
-          </div>
-
-          <!-- Warranty Badge — Elegant & Compact -->
-          <div v-if="selectedCarDetail.warranty_end_date" 
-               class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-5 rounded-2xl text-center shadow-lg">
-            <p class="text-sm opacity-90 font-medium">Warranty Coverage</p>
-            <p class="text-2xl font-bold mt-1">{{ formatDate(selectedCarDetail.warranty_end_date) }}</p>
-            <p class="text-xs mt-1 opacity-80">{{ selectedCarDetail.warranty_period }} months remaining</p>
-          </div>
-
-          <!-- Description -->
-          <div>
-            <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
-              <i class="fas fa-info-circle text-red-600"></i> Description
-            </h3>
-            <p class="text-gray-700 leading-relaxed text-sm">
-              {{ selectedCarDetail.description || 'No description available.' }}
-            </p>
-          </div>
-
-          <!-- Service History — Clean list -->
-          <div v-if="selectedCarDetail.service_history">
-            <h3 class="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
-              <i class="fas fa-tools text-red-600"></i> Service History
-            </h3>
-            <div class="space-y-2 text-sm">
-              <div v-for="(line, i) in selectedCarDetail.service_history.split('\n').filter(l => l.trim())" 
-                   :key="i" class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
-                <span class="text-red-600 font-bold text-xs mt-0.5">{{ i + 1 }}</span>
-                <span class="text-gray-700">{{ line.trim() }}</span>
+              <div class="flex gap-3 pt-4">
+                <button @click="openModal(selectedCarDetail.id); showDetailsModal = false"
+                        class="flex-1 bg-red-600 text-white py-3.5 rounded-xl font-bold text-base hover:bg-red-700 transition shadow-lg">
+                  <i class="fas fa-car mr-2"></i> Book Test Drive
+                </button>
+                <button @click="showDetailsModal = false" 
+                        class="flex-1 bg-gray-200 text-gray-800 py-3.5 rounded-xl font-bold text-base hover:bg-gray-300 transition">
+                  Close
+                </button>
               </div>
             </div>
-          </div>
-
-          <!-- Action Buttons — Perfect size -->
-          <div class="flex gap-3 pt-4">
-            <button @click="openModal(selectedCarDetail.id); showDetailsModal = false"
-                    class="flex-1 bg-red-600 text-white py-3.5 rounded-xl font-bold text-base hover:bg-red-700 transition shadow-lg">
-              <i class="fas fa-car mr-2"></i> Book Test Drive
-            </button>
-            <button @click="showDetailsModal = false" 
-                    class="flex-1 bg-gray-200 text-gray-800 py-3.5 rounded-xl font-bold text-base hover:bg-gray-300 transition">
-              Close
-            </button>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- 2. FULLSCREEN LIGHTBOX (new!) -->
-  <div v-if="lightboxOpen" class="fixed inset-0 z-[60] bg-black flex items-center justify-center" @click="lightboxOpen = false">
-    <button @click.stop="lightboxPrev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-5xl z-10 hover:scale-125 transition">
-      <i class="fas fa-chevron-left"></i>
-    </button>
-    <button @click.stop="lightboxNext" class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-5xl z-10 hover:scale-125 transition">
-      <i class="fas fa-chevron-right"></i>
-    </button>
-    <button @click.stop="lightboxOpen = false" class="absolute top-6 right-6 text-white text-4xl z-10 hover:scale-125 transition">
-      <i class="fas fa-times"></i>
-    </button>
+      <!-- 2. FULLSCREEN LIGHTBOX -->
+      <div v-if="lightboxOpen" class="fixed inset-0 z-[60] bg-black flex items-center justify-center" @click="lightboxOpen = false">
+        <button @click.stop="lightboxPrev" class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-5xl z-10 hover:scale-125 transition">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button @click.stop="lightboxNext" class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-5xl z-10 hover:scale-125 transition">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <button @click.stop="lightboxOpen = false" class="absolute top-6 right-6 text-white text-4xl z-10 hover:scale-125 transition">
+          <i class="fas fa-times"></i>
+        </button>
 
-    <div class="max-w-full max-h-full p-10">
-      <img :src="currentLightboxImage" class="max-w-full max-h-full object-contain mx-auto shadow-2xl rounded-lg" />
-    </div>
+        <div class="max-w-full max-h-full p-10">
+          <img :src="currentLightboxImage" class="max-w-full max-h-full object-contain mx-auto shadow-2xl rounded-lg" />
+        </div>
 
-    <!-- Counter -->
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/70 text-white px-6 py-3 rounded-full text-lg font-bold backdrop-blur">
-      {{ lightboxIndex + 1 }} / {{ totalImages }}
-    </div>
-  </div>
-</teleport>
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/70 text-white px-6 py-3 rounded-full text-lg font-bold backdrop-blur">
+          {{ lightboxIndex + 1 }} / {{ totalImages }}
+        </div>
+      </div>
+    </teleport>
     
 
     <!-- Existing Modals -->
@@ -411,21 +398,21 @@ const openDetailsModal = (car) => {
 
 const allImages = computed(() => {
   if (!selectedCarDetail.value) return []
-  
+
   const images = []
-  
-  // Main image palagi una
+
+  // Main image first
   if (selectedCarDetail.value.main_image) {
     images.push(getCarImage(selectedCarDetail.value.main_image))
   }
-  
-  // Additional images (safe kahit null/undefined)
+
+  // Additional images
   const additional = selectedCarDetail.value.images || []
   additional.forEach(img => {
     const url = img.image_url || img.url || ''
-    if (url) images.push(getImage(url))
+    if (url) images.push(url.startsWith('data:') || url.startsWith('http') ? url : '/default-car.jpg')
   })
-  
+
   return images
 })
 
@@ -440,12 +427,10 @@ const getImage = (path) => {
 
 const currentLightboxImage = computed(() => allImages.value[lightboxIndex.value] || '/default-car.jpg')
 
-const lightboxPrev = () => {
-  if (lightboxIndex.value > 0) {
-    lightboxIndex.value--
-  } else {
-    lightboxIndex.value = allImages.value.length - 1
-  }
+// LIGHTBOX FUNCTIONS — DAPAT NANDITO ‘TO!
+const openLightbox = (index) => {
+  lightboxIndex.value = index
+  lightboxOpen.value = true
 }
 
 const lightboxNext = () => {
@@ -453,6 +438,14 @@ const lightboxNext = () => {
     lightboxIndex.value++
   } else {
     lightboxIndex.value = 0
+  }
+}
+
+const lightboxPrev = () => {
+  if (lightboxIndex.value > 0) {
+    lightboxIndex.value--
+  } else {
+    lightboxIndex.value = allImages.value.length - 1
   }
 }
 
