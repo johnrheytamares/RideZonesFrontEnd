@@ -98,15 +98,27 @@
                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition" />
             </div>
             <div>
-              <label class="text-xs text-gray-400 mb-2 block">Status</label>
-              <select v-model="selectedAppointment.status" :disabled="!selectedAppointment.id"
-                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
-                <option class="text-black" value="pending">Pending</option>
-                <option class="text-black" value="approved">Approved</option>
-                <option class="text-black" value="completed">Completed</option>
-                <option class="text-black" value="cancelled">Cancelled</option>
-                <option class="text-black" value="rejected">Rejected</option>
+            <label class="text-xs text-gray-400 mb-2 block">Status</label>
+            <div class="relative">
+              <select 
+                v-model="selectedAppointment.status" 
+                :disabled="!selectedAppointment.id"
+                class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white 
+                      focus:border-red-500 focus:outline-none transition 
+                      appearance-none cursor-pointer">
+                <option value="" disabled>Select status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="rejected">Rejected</option>
               </select>
+              
+              <!-- Custom Arrow (para maganda) -->
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+              </div>
+            </div>
             </div>
             <div class="lg:col-span-3">
               <label class="text-xs text-gray-400 mb-2 block">Notes</label>
@@ -408,6 +420,16 @@ onMounted(fetchAppointments)
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto;
+}
+
+/* Sa <style scoped> o global CSS mo */
+select option {
+  background: #111827;  /* dark gray */
+  color: white;
+}
+select option:checked {
+  background: #ef4444;  /* red kapag selected */
+  color: white;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
