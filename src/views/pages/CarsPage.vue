@@ -13,89 +13,104 @@
     </header>
 
     <!-- Main Content -->
-    <div class="flex flex-col md:flex-row flex-1 p-6 gap-6">
-      <!-- Filters Sidebar -->
-      <aside class="md:w-1/3 lg:w-1/4 bg-white p-5 rounded-xl shadow-md space-y-6">
-        <h2 class="text-xl font-semibold text-gray-800 border-b pb-2">Filter Cars</h2>
-
-        <!-- Make -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Make</label>
-          <select v-model="filters.make" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
-            <option value="">All Makes</option>
-            <option class="text-black" v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
-          </select>
+    <div class="flex-1 flex flex-col md:flex-row md:h-[calc(100vh-88px)] overflow-hidden">
+      
+      <!-- LEFT: STICKY FILTERS (Desktop: Fixed | Mobile: Collapsible) -->
+      <aside class="md:w-80 lg:w-96 bg-white rounded-xl shadow-lg md:h-full md:overflow-y-auto p-6 space-y-6
+                      md:sticky md:top-0 md:self-start z-40
+                      border-r border-gray-100">
+        
+        <!-- Mobile Toggle Button -->
+        <div class="md:hidden flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-800">Filters</h2>
+          <button @click="showMobileFilters = !showMobileFilters" 
+                  class="text-2xl text-gray-600">
+            <i :class="showMobileFilters ? 'fas fa-times' : 'fas fa-sliders-h'"></i>
+          </button>
         </div>
 
-        <!-- Year -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
-          <select v-model="filters.year" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
-            <option value="">All Years</option>
-            <option class="text-black" v-for="year in years" :key="year" :value="year">{{ year }}</option>
-          </select>
-        </div>
+        <!-- Filters Content - Hidden on mobile when closed -->
+        <div :class="{ 'hidden': !showMobileFilters }" class="md:block space-y-6">
+          <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 hidden md:block">Filter Cars</h2>
 
-        <!-- Price Range -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Price Range (₱)</label>
-          <div class="flex items-center gap-2 mb-2">
-            <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
-            <span class="text-gray-400">—</span>
-            <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
+          <!-- Make -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Make</label>
+            <select v-model="filters.make" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+              <option value="">All Makes</option>
+              <option v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
+            </select>
           </div>
-          <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full">
-          <div class="text-xs text-gray-500 mt-1 text-right">Up to ₱{{ filters.maxPrice?.toLocaleString() || '10M' }}</div>
-        </div>
 
-        <!-- Transmission -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Transmission</label>
+          <!-- Year -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+            <select v-model="filters.year" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+              <option value="">All Years</option>
+              <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+            </select>
+          </div>
+
+          <!-- Price Range -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Price Range (₱)</label>
+            <div class="flex items-center gap-2 mb-2">
+              <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
+              <span class="text-gray-400">—</span>
+              <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
+            </div>
+            <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full">
+            <div class="text-xs text-gray-500 mt-1 text-right">Up to ₱{{ filters.maxPrice?.toLocaleString() || '10M' }}</div>
+          </div>
+
+          <!-- Transmission -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Transmission</label>
+            <div class="flex gap-3">
+              <button @click="filters.transmission = 'automatic'"
+                :class="filters.transmission === 'automatic' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
+                class="flex-1 py-2 py-2 rounded-lg border hover:bg-red-600 hover:text-white transition">
+                Automatic
+              </button>
+              <button @click="filters.transmission = 'manual'"
+                :class="filters.transmission === 'manual' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
+                class="flex-1 py-2 rounded-lg border hover:bg-red-600 hover:text-white transition">
+                Manual
+              </button>
+            </div>
+          </div>
+
+          <!-- Fuel Type -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fuel Type</label>
+            <div class="grid grid-cols-2 gap-3">
+              <label v-for="fuel in fuelTypes" :key="fuel" class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" v-model="filters.fuelTypes" :value="fuel" class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
+                <span class="text-sm text-black">{{ fuel }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full text-black border px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-200 outline-none">
+          </div>
+
+          <!-- Buttons -->
           <div class="flex gap-3">
-            <button @click="filters.transmission = 'automatic'"
-              :class="filters.transmission === 'automatic' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
-              class="flex-1 py-2 rounded-lg border hover:bg-red-600 hover:text-white transition">
-              Automatic
+            <button @click="resetFilters" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition">
+              Reset
             </button>
-            <button @click="filters.transmission = 'manual'"
-              :class="filters.transmission === 'manual' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
-              class="flex-1 py-2 rounded-lg border hover:bg-red-600 hover:text-white transition">
-              Manual
+            <button @click="fetchCars" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition">
+              Apply Filters
             </button>
           </div>
-        </div>
-
-        <!-- Fuel Type -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Fuel Type</label>
-          <div class="grid grid-cols-2 gap-3">
-            <label v-for="fuel in fuelTypes" :key="fuel" class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" v-model="filters.fuelTypes" :value="fuel" class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
-              <span class="text-sm text-black">{{ fuel }}</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Search -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-          <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full text-black border px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-200 outline-none">
-        </div>
-
-        <!-- Buttons -->
-        <div class="flex gap-3">
-          <button @click="resetFilters" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition">
-            Reset
-          </button>
-          <button @click="fetchCars" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition">
-            Apply Filters
-          </button>
         </div>
       </aside>
-
       <!-- Car Listings -->
-      <main class="flex-1">
-        <h1 class="text-3xl font-semibold text-gray-800 mb-6">Available Cars ({{ totalCars }})</h1>
+      <main class="flex-1 overflow-y-auto pb-10 md:pb-0 px-6 md:px-8 pt-6">
+        <h1 class="text-3xl font-semibold text-gray-800 mb-6 sticky top-0 bg-gray-50 py-4 -mx-6 md:-mx-8 px-8 px-6 md:px-8 z-30 border-b">Available Cars ({{ totalCars }})</h1>
 
         <div v-if="cars.length" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="car in cars" :key="car.id" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 group relative">
@@ -201,36 +216,38 @@
 
             <!-- LEFT: HORIZONTAL GALLERY (ALL IMAGES) -->
             <div class="relative h-64 md:h-full min-h-64 bg-gray-900 overflow-hidden">
-            <div class="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full">
-              <div v-for="(imageUrl, index) in allImages" 
-                  :key="index"
-                  @click="openLightbox(index)"
-                  class="flex-shrink-0 w-full h-full snap-center relative group cursor-zoom-in bg-black px-8 py-12">
+              <div class="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory h-full">
+                <div v-for="(imageUrl, index) in allImages" 
+                    :key="index"
+                    @click="openLightbox(index)"
+                    class="flex-shrink-0 w-full h-full snap-center relative group cursor-zoom-in bg-black flex items-center justify-center p-4 md:p-8">
 
-                <img 
-                  :src="imageUrl" 
-                  class="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg"
-                  alt="Car image"
-                />
+                  <!-- PERFECT BALANCE: object-contain + max dimensions + subtle padding -->
+                  <img 
+                    :src="imageUrl" 
+                    class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
+                    alt="Car image"
+                  />
 
-                <!-- Hover Effect -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500 rounded-lg"></div>
-                
-                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-500">
-                  <i class="fas fa-expand text-white text-7xl drop-shadow-2xl"></i>
-                </div>
+                  <!-- Elegant Hover Overlay -->
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-500 rounded-xl flex items-center justify-center">
+                    <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <i class="fas fa-expand text-white text-6xl drop-shadow-2xl"></i>
+                    </div>
+                  </div>
 
-                <!-- Counter -->
-                <div class="absolute bottom-6 right-6 bg-white/20 backdrop-blur-md text-white px-5 py-3 rounded-full text-lg font-bold border border-white/30">
-                  {{ index + 1 }} / {{ totalImages }}
-                </div>
+                  <!-- Counter Badge — Luxury Style -->
+                  <div class="absolute bottom-5 right-5 bg-white/95 backdrop-blur-sm text-gray-800 px-5 py-2.5 rounded-full text-sm font-bold shadow-xl border border-gray-200">
+                    {{ index + 1 }} / {{ totalImages }}
+                  </div>
 
-                <div v-if="index === 0" 
-                    class="absolute top-6 left-6 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2 rounded-full text-sm font-bold shadow-2xl border border-white/20">
-                  MAIN IMAGE
+                  <!-- MAIN Badge — Only on first image -->
+                  <div v-if="index === 0 && selectedCarDetail.main_image" 
+                      class="absolute top-5 left-5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-2xl border border-white/30">
+                    MAIN
+                  </div>
                 </div>
               </div>
-            </div>
               <!-- Title Overlay -->
               <div class="absolute bottom-5 left-5 text-white pointer-events-none">
                 <h1 class="text-3xl md:text-4xl font-bold drop-shadow-2xl">{{ selectedCarDetail.make }} {{ selectedCarDetail.model }}</h1>
@@ -369,6 +386,7 @@ const carMakes = ['Toyota', 'Honda', 'Ford', 'BMW', 'Nissan', 'Mitsubishi', 'Hyu
 const years = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i)
 const fuelTypes = ['Gasoline', 'Diesel', 'Electric', 'Hybrid']
 const maxPossiblePrice = 10000000
+const showMobileFilters = ref(false)  
 
 const isCarAvailable = (car) => {
   return car.status === 'available'
@@ -429,12 +447,12 @@ const allImages = computed(() => {
 
 const totalImages = computed(() => allImages.value.length)
 
-// Safe get image
-const getImage = (path) => {
-  if (!path) return '/default-car.jpg'
-  if (path.startsWith('data:image') || path.startsWith('http')) return path
-  return '/default-car.jpg'
-}
+// // Safe get image
+// const getImage = (path) => {
+//   if (!path) return '/default-car.jpg'
+//   if (path.startsWith('data:image') || path.startsWith('http')) return path
+//   return '/default-car.jpg'
+// }
 
 const currentLightboxImage = computed(() => allImages.value[lightboxIndex.value] || '/default-car.jpg')
 
