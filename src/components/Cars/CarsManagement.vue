@@ -144,6 +144,49 @@
               <p class="text-xs text-gray-500 mt-2">{{ form.main_image ? 'Image uploaded successfully' : 'No image selected' }}</p>
             </div>
 
+            <div class="xl:col-span-4 mt-8">
+              <label class="text-xs text-gray-400 mb-3 block font-bold flex items-center gap-3">
+                <i class="fas fa-images"></i>
+                Additional Images
+                <span class="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full">
+                  {{ additionalImages.length }} photo(s)
+                </span>
+              </label>
+
+              <input ref="multipleInput" type="file" multiple accept="image/jpeg,image/jpg,image/png" @change="handleMultipleUpload" class="hidden" />
+
+              <div @click="$refs.multipleInput.click()"
+                   class="border-2 border-dashed border-white/20 rounded-2xl p-10 text-center cursor-pointer hover:bg-white/5 transition mb-6">
+                <i class="fas fa-images text-6xl text-gray-500 mb-4"></i>
+                <p class="text-gray-400">Click or drag to add more photos • Hold Ctrl/Cmd to select many • Max 2MB each</p>
+              </div>
+
+              <!-- Preview Grid -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                <div v-for="(img, index) in additionalImages" :key="index" class="relative group rounded-xl overflow-hidden border border-white/10">
+                  <img :src="img.url" class="w-full h-32 object-cover" />
+
+                  <!-- Primary Badge-->
+                  <div v-if="img.is_primary"
+                       class="absolute top-2 left-2 bg-emerald-600 text-white text-xs px-3 py-1 rounded-full font-bold shadow-lg">
+                    MAIN
+                  </div>
+
+                  <!-- Delete -->
+                  <button @click.prevent="removeAdditionalImage(index)"
+                          class="absolute top-2 right-2 bg-rose-600/90 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition">
+                    <i class="fas fa-trash text-xs"></i>
+                  </button>
+
+                  <!-- Set as Main -->
+                  <button v-if="!img.is_primary" @click.prevent="setAsPrimary(index)"
+                          class="absolute bottom-2 inset-x-2 bg-amber-600/90 hover:bg-amber-600 text-xs py-1.5 rounded-full font-bold opacity-0 group-hover:opacity-100 transition">
+                    Set as Main
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Description & Service History -->
             <div class="xl:col-span-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
