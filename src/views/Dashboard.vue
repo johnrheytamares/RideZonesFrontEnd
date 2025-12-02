@@ -21,7 +21,7 @@
           </div>
 
           <!-- Key Stats -->
-          <div class="grid grid-cols-3 gap-5">
+          <div class="grid grid-cols-4 gap-5">
             <div class="stat-box">
               <i class="fas fa-car text-xl text-red-500"></i>
               <div class="mt-2">
@@ -34,6 +34,15 @@
               <div class="mt-2">
                 <div class="text-2xl font-bold">{{ totalAppointments }}</div>
                 <div class="text-xs text-gray-500 uppercase tracking-wider opacity-80">Appointments</div>
+              </div>
+            </div>
+            <div class="stat-box">
+              <i class="fas fa-file-alt text-xl text-sky-500"></i>
+              <div class="mt-2">
+                <div class="text-2xl font-bold">{{ totalGoogleEntries }}</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider opacity-80">
+                  Form Entries
+                </div>
               </div>
             </div>
             <div class="stat-box">
@@ -100,6 +109,11 @@ const doughnutChartRef = ref(null)
 let barChartInstance = null
 let doughnutChartInstance = null
 
+const gformData = ref([])
+
+const totalGoogleEntries = computed(() => gformData.value.length)
+
+
 const totalStock = computed(() => 
   stockData.value.reduce((sum, car) => sum + (car.stock_count || 0), 0)
 )
@@ -123,7 +137,8 @@ const fetchData = async () => {
 
     const [stockRes, appRes] = await Promise.all([
       fetch('https://ridezonesbackends-dzei.onrender.com/cardistribution', { headers }),
-      fetch('https://ridezonesbackends-dzei.onrender.com/dataappointments', { headers })
+      fetch('https://ridezonesbackends-dzei.onrender.com/dataappointments', { headers }),
+      fetch('https://ridezonesbackends-dzei.onrender.com/api/google-form')
     ])
 
     const stockJson = await stockRes.json()
