@@ -20,7 +20,6 @@
             </div>
           </div>
 
-          <!-- Stats -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
             <div class="stat-box">
               <i class="fas fa-store-alt text-xl text-red-500"></i>
@@ -95,21 +94,35 @@
 
         <!-- Dealers Table -->
         <div class="p-6">
-          <div class="flex justify-between items-center mb-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <h3 class="text-lg font-bold flex items-center gap-3">
               <i class="fas fa-list text-red-500"></i>
               Dealer Directory
             </h3>
-            <button @click="fetchDealers" class="flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
+
+            <div class="flex gap-3 w-full sm:w-auto">
+              <!-- Search / Filter -->
+              <div class="relative flex-1 sm:flex-initial">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                <input v-model="searchQuery" placeholder="Search dealers..."
+                       class="w-full sm:w-80 pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-red-500 focus:outline-none transition" />
+              </div>
+
+              <button @click="fetchDealers" class="flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition whitespace-nowrap">
+                <i class="fas fa-sync-alt"></i> Refresh
+              </button>
+            </div>
           </div>
 
           <!-- Empty State -->
-          <div v-if="dealers.length === 0" class="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
+          <div v-if="filteredDealers.length === 0" class="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
             <i class="fas fa-store-slash text-6xl text-gray-600 mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-400">No Dealers Found</h3>
-            <p class="text-gray-500 mt-2">Add your first dealership partner to get started</p>
+            <h3 class="text-xl font-bold text-gray-400">
+              {{ searchQuery ? 'No dealers match your search' : 'No Dealers Found' }}
+            </h3>
+            <p class="text-gray-500 mt-2">
+              {{ searchQuery ? 'Try a different keyword' : 'Add your first dealership partner to get started' }}
+            </p>
           </div>
 
           <!-- Table -->
@@ -126,7 +139,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/5">
-                <tr v-for="dealer in dealers" :key="dealer.id" 
+                <tr v-for="dealer in filteredDealers" :key="dealer.id" 
                     class="hover:bg-white/5 transition"
                     :class="{ 'bg-amber-500/5 border-l-4 border-amber-500': isEditing && editId === dealer.id }">
                   <td class="py-5">
@@ -166,13 +179,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
+// Reactive state
 const loading = ref(false)
 const dealers = ref([])
 const isEditing = ref(false)
 const editId = ref(null)
 const previewLogo = ref('')
+const searchQuery = ref('')  // <-- Search input
 
 const form = ref({
   name: '', email: '', phone: '', address: '', description: ''
@@ -180,7 +195,36 @@ const form = ref({
 
 const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
 
-const showNotification = (msg, type = 'info') => alert(`[${type.toUpperCase()}] ${msg}`)
+const showNotification = (msg, type = 'info') => {
+  alert(`[${type.toUpperCase()}] ${msg}`)
+}
+
+// Computed: filtered dealers based on search query
+const filteredDealers = computed(() => {
+  if (!searchQuery.value.trim()) return dealers.value
+
+  const query = searchQuery.value.toLowerCase()
+  return dealers.value.filter(dealer =>
+    dealer.name?.toLowerCase().includes(query) ||
+    dealer.email?.toLowerCase().includes(query) ||
+    dealer.phone?.includes(query) ||
+    dealer.address?.toLowerCase().includes(query)
+  )
+})
+
+// Helper: check if name + email already exists (excluding current editing record)
+const isDuplicate = () => {
+  const name = form.value.name?.trim().toLowerCase()
+  const email = form.value.email?.trim().toLowerCase()
+
+  return dealers.value.some(dealer => {
+    const sameName = dealer.name?.trim().toLowerCase() === name
+    const sameEmail = dealer.email?.trim().toLowerCase() === email
+    const isCurrentRecord = isEditing.value && dealer.id === editId.value
+
+    return sameName && sameEmail && !isCurrentRecord
+  })
+}
 
 const fetchDealers = async () => {
   loading.value = true
@@ -192,7 +236,9 @@ const fetchDealers = async () => {
 }
 
 const createDealer = async () => {
-  if (!form.value.name.trim()) return showNotification('Name required', 'error')
+  if (!form.value.name.trim()) return showNotification('Dealer name is required', 'error')
+  if (isDuplicate()) return showNotification('A dealer with this Name and Email already exists!', 'error')
+
   loading.value = true
   try {
     const res = await fetch(`${API_BASE}/createdealer`, {
@@ -204,12 +250,21 @@ const createDealer = async () => {
     if (data.status === 'success') {
       await fetchDealers()
       resetForm()
-      showNotification('Dealer created!', 'success')
+      showNotification('Dealer created successfully!', 'success')
+    } else {
+      showNotification(data.message || 'Failed to create dealer', 'error')
     }
-  } catch { } finally { loading.value = false }
+  } catch (err) {
+    showNotification('Network error', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
 const updateDealer = async () => {
+  if (!form.value.name.trim()) return showNotification('Dealer name is required', 'error')
+  if (isDuplicate()) return showNotification('Another dealer with this Name and Email already exists!', 'error')
+
   loading.value = true
   try {
     const res = await fetch(`${API_BASE}/updatedealer/${editId.value}`, {
@@ -221,7 +276,7 @@ const updateDealer = async () => {
     if (data.status === 'success') {
       await fetchDealers()
       cancelEdit()
-      showNotification('Dealer updated!', 'success')
+      showNotification('Dealer updated successfully!', 'success')
     }
   } catch { } finally { loading.value = false }
 }
@@ -258,6 +313,7 @@ const resetForm = () => {
 onMounted(fetchDealers)
 </script>
 
+<!-- Styles remain unchanged -->
 <style scoped>
 .glow-bg {
   position: absolute;

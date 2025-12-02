@@ -15,7 +15,7 @@
             <div>
               <h1 class="text-3xl font-bold">Cars Management</h1>
               <p class="text-gray-400 text-sm mt-1 opacity-90">
-                Manage vehicle inventory • {{ cars.length }} total vehicles
+                Manage vehicle inventory • {{ filteredCars.length }} of {{ cars.length }} total vehicles
               </p>
             </div>
           </div>
@@ -64,13 +64,31 @@
             </span>
           </div>
 
+          <!-- Duplicate Warning -->
+          <div v-if="isDuplicateCar" class="mb-6 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center gap-3 text-rose-400">
+            <i class="fas fa-exclamation-triangle text-xl"></i>
+            <div>
+              <p class="font-bold">Duplicate Vehicle Detected!</p>
+              <p class="text-sm">A car with the same Make, Model, Year, and Variant already exists.</p>
+            </div>
+          </div>
+
           <form @submit.prevent="isEditing ? updateCar() : createCar()" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <!-- Basic Info -->
             <div>
-              <label class="text-xs text-gray-400 mb-2 block">Dealer ID *</label>
-              <input v-model.number="form.dealer_id" type="number" required placeholder="1"
-                     class="input-field" />
-            </div>
+                <label class="text-xs text-gray-400 mb-2 block">
+                  Dealership <span class="text-red-400">*</span>
+                </label>
+                <select v-model="selectedDealerId" 
+                        :disabled="isDealer && !isEditing" 
+                        required 
+                        class="input-field ">
+                  <option value="" disabled>Select Dealer ID</option>
+                  <option class="text-black" v-for="dealer in dealers" :key="dealer.id" :value="dealer.id">
+                    Dealer ID: {{ dealer.id }}
+                  </option>
+                </select>
+              </div>
             <div>
               <label class="text-xs text-gray-400 mb-2 block">Make *</label>
               <input v-model="form.make" required placeholder="Toyota, BMW"
@@ -207,8 +225,8 @@
                       class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition">
                 Cancel Edit
               </button>
-              <button type="submit" :disabled="loading"
-                      class="px-10 py-4 rounded-xl font-bold text-sm transition shadow-2xl flex items-center gap-3"
+              <button type="submit" :disabled="loading || isDuplicateCar"
+                      class="px-10 py-4 rounded-xl font-bold text-sm transition shadow-2xl flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                       :class="isEditing 
                         ? 'bg-gradient-to-r from-amber-600 to-orange-700 hover:from-amber-700 hover:to-orange-800' 
                         : 'bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900'">
@@ -221,22 +239,36 @@
 
         <!-- Table Section -->
         <div class="p-8">
-          <div class="flex justify-between items-center mb-8">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
             <h3 class="text-xl font-bold flex items-center gap-3">
               <i class="fas fa-th-list text-red-500"></i>
               Vehicle Inventory
             </h3>
-            <button @click="fetchCars" class="flex items-center gap-3 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition">
-              <i class="fas fa-sync-alt" :class="{ 'animate-spin': loading }"></i>
-              Refresh List
-            </button>
+
+            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+              <!-- Search Bar -->
+              <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                <input v-model="searchQuery" placeholder="Search by Make, Model, Year, Price, Status..."
+                       class="w-full sm:w-96 pl-12 pr-5 py-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-red-500 focus:outline-none transition" />
+              </div>
+
+              <button @click="fetchCars" class="flex items-center gap-3 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-bold transition whitespace-nowrap">
+                <i class="fas fa-sync-alt" :class="{ 'animate-spin': loading }"></i>
+                Refresh
+              </button>
+            </div>
           </div>
 
           <!-- Empty State -->
-          <div v-if="!loading && cars.length === 0" class="text-center py-24 bg-white/5 rounded-2xl border border-white/10">
+          <div v-if="!loading && filteredCars.length === 0" class="text-center py-24 bg-white/5 rounded-2xl border border-white/10">
             <i class="fas fa-car-crash text-8xl text-gray-700 mb-6"></i>
-            <h3 class="text-2xl font-bold text-gray-400 mb-3">No Vehicles Found</h3>
-            <p class="text-gray-500">Start building your luxury inventory</p>
+            <h3 class="text-2xl font-bold text-gray-400 mb-3">
+              {{ searchQuery ? 'No vehicles match your search' : 'No Vehicles Found' }}
+            </h3>
+            <p class="text-gray-500">
+              {{ searchQuery ? 'Try different keywords' : 'Start building your luxury inventory' }}
+            </p>
           </div>
 
           <!-- Cars Table -->
@@ -256,7 +288,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/5">
-                <tr v-for="car in cars" :key="car.id"
+                <tr v-for="car in filteredCars" :key="car.id"
                     class="hover:bg-white/5 transition"
                     :class="{ 'bg-amber-500/5 border-l-4 border-amber-500': isEditing && editId === car.id }">
                   <td class="py-6 font-mono text-sm">#{{ car.id }}</td>
@@ -318,16 +350,11 @@
          :class="toast.type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'">
       {{ toast.message }}
     </div>
-    <!-- Sa form mo, below ng Model or Variant input -->
-    <div v-if="isDuplicateCar" class="text-red-500 text-sm mt-2 flex items-center gap-2">
-      <i class="fas fa-exclamation-triangle"></i>
-      <span>This vehicle already exists in inventory!</span>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watchEffect } from 'vue'
 
 const loading = ref(false)
 const uploadingAdditional = ref(false)
@@ -336,7 +363,11 @@ const isEditing = ref(false)
 const editId = ref(null)
 const previewImage = ref('')
 const additionalImages = ref([])
+const searchQuery = ref('') 
 const toast = ref({ show: false, message: '', type: 'success' })
+
+const dealers = ref([])
+const selectedDealerId = ref('')
 
 const currentUserInfo = ref({
   name: 'Loading...',
@@ -350,7 +381,62 @@ const form = ref({
   warranty_period: 36, warranty_start_date: '', warranty_end_date: '', service_history: ''
 })
 
+
+  // Dapat may ganito sa script setup (ilagay sa taas)
+  const currentUser = ref({
+    role: '',
+  dealer_id: null
+  })
+
 const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
+
+const filteredCars = computed(() => {
+  if (!searchQuery.value.trim()) return cars.value
+
+  const query = searchQuery.value.toLowerCase()
+  return cars.value.filter(car => {
+    const fullName = `${car.make} ${car.model} ${car.variant || ''} ${car.year || ''}`.toLowerCase()
+    const price = car.price?.toString()
+    const status = car.status?.toLowerCase()
+    const dealer = car.dealer_id?.toString()
+
+    return fullName.includes(query) ||
+           price.includes(query) ||
+           status.includes(query) ||
+           dealer.includes(query)
+  })
+})
+
+const isDealer = computed(() => currentUser.value.role === 'dealer')
+
+// Sync selectedDealerId → form.dealer_id
+watch(selectedDealerId, (newId) => {
+  form.value.dealer_id = newId ? Number(newId) : ''
+})
+
+// Auto-select kung dealer ang nakalogin
+watchEffect(() => {
+  if (isDealer.value && !isEditing.value) {
+    selectedDealerId.value = currentUser.value.dealer_id
+  }
+})
+
+// Ilagay pagkatapos ng selectedDealerId ref
+watch(selectedDealerId, (newId) => {
+  form.value.dealer_id = newId ? Number(newId) : ''
+})
+
+// Fetch dealers (para lang makuha yung valid IDs)
+const fetchDealers = async () => {
+  try {
+    const res = await fetch(`${API_BASE}/listdealers`)
+    const data = await res.json()
+    dealers.value = data.dealers || []
+  } catch (err) {
+    console.error('Failed to load dealer IDs:', err)
+    dealers.value = []
+  }
+}
 
 // COMPUTED COUNTS
 const availableCount = computed(() => cars.value.filter(c => c.status === 'available').length)
@@ -360,7 +446,7 @@ const reservedCount = computed(() => cars.value.filter(c => c.status === 'reserv
 const isDuplicateCar = computed(() => {
   if (!form.value.make?.trim() || !form.value.model?.trim()) return false
 
-  const newKey = `${form.value.make} ${form.value.model} ${form.value.year || ''} ${form.value.variant || ''}`.trim().toLowerCase()
+  const newKey = `${form.value.make} ${form.value.model} ${form.value.year || ''} ${form.value.variant?.trim() || ''}`.toLowerCase()
 
   return cars.value.some(car => {
     if (isEditing.value && car.id === editId.value) return false // huwag i-count yung sarili
@@ -388,6 +474,7 @@ const calculateWarrantyEnd = () => {
   end.setMonth(end.getMonth() + Number(form.value.warranty_period))
   form.value.warranty_end_date = end.toISOString().split('T')[0]
 }
+
 
 const formatDate = (d) => new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 
@@ -468,10 +555,10 @@ const removeAdditionalImage = (index) => {
 }
 
 const setAsPrimary = (index) => {
-  additionalImages.value.forEach(img, i => {
+  additionalImages.value.forEach((img, i) => {
     img.is_primary = i === index ? 1 : 0
-  }),
-  form.value.main_image = additionalImages.value[index].url,
+  })
+  form.value.main_image = additionalImages.value[index].url
   previewImage.value = additionalImages.value[index].url
 }
 
@@ -538,7 +625,7 @@ const createCar = async () => {
 
   loading.value = true
   try {
-    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
 
     // ← ETO NA ANG TAMANG PARAAN (PINAKA-IMPORTANTENG LINYA!)
     const payload = {
@@ -577,13 +664,13 @@ const createCar = async () => {
 
 const updateCar = async () => {
   if (isDuplicateCar.value) {
-    showToast('Duplicate vehicle!', 'error')
+    showToast('Another vehicle with same details already exists!', 'error')
     return
   }
 
   loading.value = true
   try {
-    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
 
     const payload = {
       ...form.value,
@@ -619,7 +706,7 @@ const updateCar = async () => {
 const deleteCar = async (id) => {
   if (!confirm('Delete this vehicle?')) return
   try {
-    const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
     await fetch(`${API_BASE}/deletecars/${id}`, {
       method: 'DELETE',
       headers: { 'X-User': JSON.stringify(user) }
@@ -635,14 +722,12 @@ const editCar = (car) => {
   isEditing.value = true
   editId.value = car.id
   form.value = { ...car }
+  selectedDealerId.value = car.dealer_id   // ← DAPAT MAY GANITO!
   previewImage.value = car.main_image || ''
-
-  // ← AYUSIN MO RIN ‘TO (image_url, hindi url)
   additionalImages.value = (car.images || []).map(img => ({
     url: img.image_url,
     is_primary: img.is_primary ? 1 : 0
   }))
-
   document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })
 }
 
@@ -663,8 +748,24 @@ const resetForm = () => {
   additionalImages.value = []
 }
 
-onMounted(() => {
-  fetchCars()
+// Sa onMounted(), idagdag ang fetchDealers()
+onMounted(async () => {
+  const stored = localStorage.getItem('authUser') || localStorage.getItem('user')
+  if (stored) {
+    const user = JSON.parse(stored)
+    currentUser.value = {
+      role: user.role || '',
+      dealer_id: user.dealer_id || null
+    }
+  }
+
+  await fetchDealers()   // ← DAPAT MAY GANITO
+  await fetchCars()
+
+  // Auto-select kung dealer
+  if (currentUser.value.role === 'dealer' && !isEditing.value) {
+    selectedDealerId.value = currentUser.value.dealer_id
+  }
 })
 </script>
 

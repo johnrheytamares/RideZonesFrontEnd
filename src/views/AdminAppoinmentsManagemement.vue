@@ -15,7 +15,7 @@
             <div>
               <h1 class="text-3xl font-bold">Appointment Management</h1>
               <p class="text-gray-400 text-sm mt-1 opacity-90">
-                Manage client test drives • {{ appointments.length }} total bookings
+                Manage client test drives • <span class="text-red-400 font-bold">{{ filteredAppointments.length }}</span> of {{ appointments.length }} booking(s)
               </p>
             </div>
           </div>
@@ -129,14 +129,34 @@
 
         <!-- Table -->
         <div class="p-6">
-          <div class="flex justify-between items-center mb-6">
+          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
             <h3 class="text-lg font-bold flex items-center gap-3">
               <i class="fas fa-list-alt text-red-500"></i>
               All Appointments
             </h3>
-            <button @click="fetchAppointments" class="flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium transition">
-              <i class="fas fa-sync-alt" :class="{ 'animate-spin': loading }"></i> Refresh
-            </button>
+
+            <!-- Search + Filter + Refresh -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              <div class="relative">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                <input v-model="searchQuery" placeholder="Search client, email, phone, vehicle..."
+                       class="w-full sm:w-80 pl-12 pr-5 py-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-red-500 focus:outline-none transition" />
+              </div>
+
+              <select v-model="statusFilter"
+                      class="px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-red-500 focus:outline-none transition">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              <button @click="fetchAppointments" class="flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium transition">
+                <i class="fas fa-sync-alt" :class="{ 'animate-spin': loading }"></i> Refresh
+              </button>
+            </div>
           </div>
 
           <!-- Loading / Empty -->
@@ -144,10 +164,10 @@
             <div class="spinner"></div>
             <p class="text-gray-400 mt-4">Loading appointments...</p>
           </div>
-          <div v-else-if="appointments.length === 0" class="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
+          <div v-else-if="filteredAppointments.length === 0" class="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
             <i class="fas fa-calendar-times text-6xl text-gray-600 mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-400">No Appointments Found</h3>
-            <p class="text-gray-500 mt-2">All test drive bookings will appear here</p>
+            <h3 class="text-xl font-bold text-gray-400">{{ searchQuery || statusFilter ? 'No matching appointments' : 'No Appointments Found' }}</h3>
+            <p class="text-gray-500 mt-2">{{ searchQuery || statusFilter ? 'Try different keywords or clear filters' : 'All test drive bookings will appear here' }}</p>
           </div>
 
           <!-- Table -->
@@ -166,7 +186,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/5">
-                <tr v-for="apt in appointments" :key="apt.id"
+                <tr v-for="apt in filteredAppointments" :key="apt.id"
                     class="hover:bg-white/5 transition"
                     :class="{ 'bg-amber-500/5 border-l-4 border-amber-500': selectedAppointment.id === apt.id }">
                   <td class="py-5 font-medium">{{ apt.user_name || apt.full_name || 'Guest' }}</td>
@@ -209,16 +229,40 @@ import { ref, computed, onMounted } from 'vue'
 const loading = ref(false)
 const saving = ref(false)
 const appointments = ref([])
+const searchQuery = ref('')
+const statusFilter = ref('')
 
 const selectedAppointment = ref({
   id: null, user_name: '', full_name: '', email: '', phone: '',
   make: '', model: '', variant: '', appointment_at: '', status: 'pending', notes: ''
 })
 
+const currentDealerId = ref('Loading...')
+
+const filteredAppointments = computed(() => {
+  let filtered = appointments.value
+
+  if (statusFilter.value) {
+    filtered = filtered.filter(apt => apt.status === statusFilter.value)
+  }
+
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase()
+    filtered = filtered.filter(apt => {
+      const client = (apt.user_name || apt.full_name || '').toLowerCase()
+      const email = apt.email?.toLowerCase() || ''
+      const phone = apt.phone || ''
+      const vehicle = `${apt.make} ${apt.model} ${apt.variant || ''}`.toLowerCase()
+      return client.includes(query) || email.includes(query) || phone.includes(query) || vehicle.includes(query)
+    })
+  }
+
+  return filtered
+})
+
 const pendingCount = computed(() => appointments.value.filter(a => a.status === 'pending').length)
 const approvedCount = computed(() => appointments.value.filter(a => ['approved','completed'].includes(a.status)).length)
 const cancelledCount = computed(() => appointments.value.filter(a => ['cancelled','rejected'].includes(a.status)).length)
-const currentDealerId = ref('Loading...')
 
 const carDisplay = computed(() => {
   const a = selectedAppointment.value
@@ -250,13 +294,9 @@ const fetchAppointments = async () => {
     if (data.status === 'success' && data.appointments) {
       let filtered = data.appointments
 
-      // ITO LANG ANG KULANG MO BRO!!!
       if (user?.role === 'dealer' && user?.dealer_id) {
-        filtered = data.appointments.filter(apt => 
-          apt.dealer_id == user.dealer_id
-        )
+        filtered = filtered.filter(apt => apt.dealer_id == user.dealer_id)
       }
-      // Kung admin → lahat talaga
 
       appointments.value = filtered
       console.log(`Showing ${appointments.value.length} appointment(s) →`, 
