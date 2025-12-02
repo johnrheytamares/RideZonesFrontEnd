@@ -414,7 +414,7 @@ const handleImageUpload = async (e) => {
   formData.append('main_image_file', file)
 
   // IMPORTANT: Send user info
-  const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
   if (!user.id) {
     showToast('Please login again', 'error')
     return
