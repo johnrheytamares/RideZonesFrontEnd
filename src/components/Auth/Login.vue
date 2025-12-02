@@ -64,6 +64,8 @@
           </button>
         </div>
 
+        <div class="g-recaptcha" data-sitekey="6Lfi7h0sAAAAAKJGT6TPB09Ivo9qw-9pSzA5Yx1u"></div> <!-- reCAPTCHA widget -->
+
         <button 
           type="submit" 
           class="login-button" 
@@ -80,8 +82,7 @@
         </button>
       </form>
 
-      
-      <div class="g-recaptcha" data-sitekey="6Lfi7h0sAAAAAKJGT6TPB09Ivo9qw-9pSzA5Yx1u"></div> <!-- reCAPTCHA widget -->
+
 
       <!-- Register Link -->
       <div class="registration-section">
