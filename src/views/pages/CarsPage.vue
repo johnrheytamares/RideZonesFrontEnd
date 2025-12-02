@@ -333,7 +333,6 @@ import { debounce } from 'lodash-es'
 import { useRouter } from 'vue-router'
 import AppointmentModal from './AppointmentModal.vue'
 import CarComparison from './CarComparison.vue'
-import FooterSection from './FooterSection.vue'
 
 const router = useRouter()
 const lightboxOpen = ref(false)
@@ -413,12 +412,7 @@ const allImages = computed(() => {
 
 const totalImages = computed(() => allImages.value.length)
 
-// // Safe get image
-// const getImage = (path) => {
-//   if (!path) return '/default-car.jpg'
-//   if (path.startsWith('data:image') || path.startsWith('http')) return path
-//   return '/default-car.jpg'
-// }
+
 
 const currentLightboxImage = computed(() => allImages.value[lightboxIndex.value] || '/default-car.jpg')
 

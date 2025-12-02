@@ -175,7 +175,7 @@ const editId = ref(null)
 const previewLogo = ref('')
 
 const form = ref({
-  name: '', email: '', phone: '', address: '', description: '', logo: ''
+  name: '', email: '', phone: '', address: '', description: ''
 })
 
 const API_BASE = 'https://ridezonesbackends-dzei.onrender.com'
