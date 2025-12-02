@@ -554,20 +554,36 @@ const createCar = async () => {
   loading.value = true
   try {
     const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+
+    // ← ETO NA ANG TAMANG PARAAN (PINAKA-IMPORTANTENG LINYA!)
+    const payload = {
+      ...form.value,
+      additional_images: additionalImages.value.map(img => ({
+        url: img.url,
+        is_primary: img.is_primary ? 1 : 0   // o kaya !!img.is_primary
+      }))
+    }
+
     const res = await fetch(`${API_BASE}/createcars`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-User': JSON.stringify(user) },
-      body: JSON.stringify(form.value)
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-User': JSON.stringify(user) 
+      },
+      body: JSON.stringify(payload)   // ← DAPAT PAYLOAD, HINDI FORM.VALUE
     })
+
     const data = await res.json()
     if (data.status === 'success') {
-      showToast('Vehicle added!', 'success')
+      showToast('Car + ALL IMAGES saved!', 'success')
       resetForm()
+      additionalImages.value = []   // clear din ang additional images
       await fetchCars()
     } else {
-      showToast(data.message || 'Add failed', 'error')
+      showToast(data.message || 'Failed', 'error')
     }
-  } catch {
+  } catch (err) {
+    console.error(err)
     showToast('Network error', 'error')
   } finally {
     loading.value = false
@@ -576,25 +592,40 @@ const createCar = async () => {
 
 const updateCar = async () => {
   if (isDuplicateCar.value) {
-    showToast('Another vehicle with same details exists!', 'error')
+    showToast('Duplicate vehicle!', 'error')
     return
   }
 
   loading.value = true
   try {
     const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+
+    const payload = {
+      ...form.value,
+      additional_images: additionalImages.value.map(img => ({
+        url: img.url,
+        is_primary: img.is_primary ? 1 : 0
+      }))
+    }
+
     const res = await fetch(`${API_BASE}/updatecars/${editId.value}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-User': JSON.stringify(user) },
-      body: JSON.stringify(form.value)
+      headers: { 
+        'Content-Type': 'application/json', 
+        'X-User': JSON.stringify(user) 
+      },
+      body: JSON.stringify(payload)
     })
+
     if (res.ok) {
-      showToast('Vehicle updated!', 'success')
+      showToast('Car & photos updated!', 'success')
       cancelEdit()
       await fetchCars()
+    } else {
+      showToast('Update failed', 'error')
     }
   } catch {
-    showToast('Update failed', 'error')
+    showToast('Network error', 'error')
   } finally {
     loading.value = false
   }
