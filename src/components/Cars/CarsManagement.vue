@@ -354,7 +354,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watchEffect } from 'vue'
+import { ref, onMounted, computed, watchEffect, watch } from 'vue'
 
 const loading = ref(false)
 const uploadingAdditional = ref(false)
