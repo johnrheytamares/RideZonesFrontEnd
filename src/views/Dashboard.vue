@@ -135,7 +135,7 @@ const fetchData = async () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}')
     const headers = { 'Content-Type': 'application/json', 'X-User': JSON.stringify(user) }
 
-    const [stockRes, appRes] = await Promise.all([
+    const [stockRes, appRes, googleRes] = await Promise.all([
       fetch('https://ridezonesbackends-dzei.onrender.com/cardistribution', { headers }),
       fetch('https://ridezonesbackends-dzei.onrender.com/dataappointments', { headers }),
       fetch('https://ridezonesbackends-dzei.onrender.com/api/google-form')
