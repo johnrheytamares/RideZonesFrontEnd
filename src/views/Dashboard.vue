@@ -143,9 +143,11 @@ const fetchData = async () => {
 
     const stockJson = await stockRes.json()
     const appJson = await appRes.json()
+    const googleJson = await googleRes.json()
 
     if (stockJson.status === 'success') stockData.value = stockJson.stocks || []
     if (appJson.status === 'success') appointmentData.value = appJson.data || []
+    if (googleJson.success === true) gformData.value = googleJson.data || []
 
   } catch (err) {
     console.error('Failed to load dashboard:', err)
