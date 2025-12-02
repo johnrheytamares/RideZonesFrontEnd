@@ -291,7 +291,8 @@ export default {
           body: JSON.stringify({
             name: this.name,
             email: this.email,
-            password: this.password
+            password: this.password,
+            token: this.token
           })
         });
 
@@ -299,7 +300,7 @@ export default {
         console.log(data);
 
         if (data.status === 'succcess') {
-          this.message = 'Registration successful! Welcome to AutoElite. Redirecting to login...';
+          this.message = 'Registration successful! Welcome to RideZone. Redirecting to login...';
           setTimeout(() => this.$router.push('/login'));
         } else {
           this.message = data.message || 'Registration failed. Please try again.';
