@@ -522,7 +522,7 @@ const fetchCars = async () => {
       headers['X-User'] = JSON.stringify(user)
     }
 
-    const res = await fetch(`${API_BASE}/listcars`, {
+    const res = await fetch(`${API_BASE}/searchcars`, {
       method: 'GET',
       headers
     })
@@ -650,11 +650,12 @@ const editCar = (car) => {
   isEditing.value = true
   editId.value = car.id
   form.value = { ...car }
-  previewImage.value = getCarImage(car.main_image)
+  previewImage.value = car.main_image || ''
 
+  // ← AYUSIN MO RIN ‘TO (image_url, hindi url)
   additionalImages.value = (car.images || []).map(img => ({
-    url: img.image_url || img.url,
-    is_primary: img.is_primary || 0
+    url: img.image_url,
+    is_primary: img.is_primary ? 1 : 0
   }))
 
   document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })
