@@ -16,7 +16,7 @@
     <div class="flex-1 flex md:h-[calc(100vh-88px)] relative">
       
       <!-- LEFT: STICKY FILTERS (Desktop: Fixed | Mobile: Collapsible) -->
-      <aside class="hidden md:block w-80 lg:w-96 bg-white shadow-2xl border-r border-gray-200 fixed inset-y-0 left-0 z-40 pt-20 overflow-y-auto">
+      <aside class="hidden md:block w-80 lg:w-96 bg-white shadow-2xl border-r border-gray-200 fixed inset-y-0 left-0 z-40 pt-10 overflow-y-auto">
         <div class="p-6 space-y-6">
           <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-red-600 pb-3 inline-block">Filter Cars</h2>
 
@@ -25,7 +25,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Make</label>
             <select v-model="filters.make" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
               <option value="">All Makes</option>
-              <option v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
+              <option class="text-black" v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
             </select>
           </div>
 
@@ -34,7 +34,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
             <select v-model="filters.year" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
               <option value="">All Years</option>
-              <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+              <option class="text-black" v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
           </div>
 
@@ -42,11 +42,11 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Price Range (₱)</label>
             <div class="flex items-center gap-2 mb-2">
-              <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full border rounded-lg px-4 py-3 text-sm">
+              <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full border text-black rounded-lg px-4 py-3 text-sm">
               <span class="text-gray-400">—</span>
-              <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full border rounded-lg px-4 py-3 text-sm">
+              <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full border text-black rounded-lg px-4 py-3 text-sm">
             </div>
-            <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full h-2 rounded-lg">
+            <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full text-black h-2 rounded-lg">
             <div class="text-xs text-gray-500 mt-1 text-right">Up to ₱{{ filters.maxPrice?.toLocaleString() || '10M' }}</div>
           </div>
 
@@ -55,10 +55,10 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Transmission</label>
             <div class="grid grid-cols-2 gap-3">
               <button @click="filters.transmission = 'automatic'"
-                :class="filters.transmission === 'automatic' ? 'bg-red-600 text-white' : 'bg-gray-100'"
+                :class="filters.transmission === 'automatic' ? 'bg-red-600 text-white' : 'bg-gray-300'"
                 class="py-3 rounded-lg font-medium hover:bg-red-600 hover:text-white transition">Automatic</button>
               <button @click="filters.transmission = 'manual'"
-                :class="filters.transmission === 'manual' ? 'bg-red-600 text-white' : 'bg-gray-100'"
+                :class="filters.transmission === 'manual' ? 'bg-red-600 text-white' : 'bg-gray-300'"
                 class="py-3 rounded-lg font-medium hover:bg-red-600 hover:text-white transition">Manual</button>
             </div>
           </div>
@@ -69,7 +69,7 @@
             <div class="grid grid-cols-2 gap-3">
               <label v-for="fuel in fuelTypes" :key="fuel" class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" v-model="filters.fuelTypes" :value="fuel" class="w-5 h-5 text-red-600 rounded">
-                <span class="text-sm">{{ fuel }}</span>
+                <span class="text-sm text-black">{{ fuel }}</span>
               </label>
             </div>
           </div>
@@ -77,12 +77,12 @@
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
+            <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full border rounded-lg px-4 py-3 text-black focus:ring-2 focus:ring-red-200 outline-none">
           </div>
 
           <!-- Buttons -->
-          <div class="flex gap-3 pt-6">
-            <button @click="resetFilters" class="flex-1 bg-gray-200 py-3 rounded-lg font-bold hover:bg-gray-300 transition">Reset</button>
+          <div class="flex gap-3 pt-2">
+            <button @click="resetFilters" class="flex-1 bg-gray-200 py-3 rounded-lg font-bold hover:bg-gray-500 transition">Reset</button>
             <button @click="fetchCars" class="flex-1 bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">Apply Filters</button>
           </div>
         </div>
