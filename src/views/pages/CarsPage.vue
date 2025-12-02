@@ -81,9 +81,9 @@
           </div>
 
           <!-- Buttons -->
-          <div class="flex gap-3 pt-2">
-            <button @click="resetFilters" class="flex-1 bg-gray-200 rounded-lg font-bold hover:bg-gray-500 transition">Reset</button>
-            <button @click="fetchCars" class="flex-1 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">Apply Filters</button>
+          <div class="flex gap-3">
+            <button @click="resetFilters" class="flex-1 bg-gray-200 py-3 rounded-lg font-bold hover:bg-gray-500 transition">Reset</button>
+            <button @click="fetchCars" class="flex-1 bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">Apply Filters</button>
           </div>
         </div>
       </aside>
