@@ -13,30 +13,17 @@
     </header>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col md:flex-row md:h-[calc(100vh-88px)] overflow-hidden">
+    <div class="flex-1 flex md:h-[calc(100vh-88px)] relative">
       
       <!-- LEFT: STICKY FILTERS (Desktop: Fixed | Mobile: Collapsible) -->
-      <aside class="md:w-80 lg:w-96 bg-white rounded-xl shadow-lg md:h-full md:overflow-y-auto p-6 space-y-6
-                      md:sticky md:top-0 md:self-start z-40
-                      border-r border-gray-100">
-        
-        <!-- Mobile Toggle Button -->
-        <div class="md:hidden flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-800">Filters</h2>
-          <button @click="showMobileFilters = !showMobileFilters" 
-                  class="text-2xl text-gray-600">
-            <i :class="showMobileFilters ? 'fas fa-times' : 'fas fa-sliders-h'"></i>
-          </button>
-        </div>
-
-        <!-- Filters Content - Hidden on mobile when closed -->
-        <div :class="{ 'hidden': !showMobileFilters }" class="md:block space-y-6">
-          <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 hidden md:block">Filter Cars</h2>
+      <aside class="hidden md:block w-80 lg:w-96 bg-white shadow-2xl border-r border-gray-200 fixed inset-y-0 left-0 z-40 pt-20 overflow-y-auto">
+        <div class="p-6 space-y-6">
+          <h2 class="text-2xl font-bold text-gray-800 border-b-2 border-red-600 pb-3 inline-block">Filter Cars</h2>
 
           <!-- Make -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Make</label>
-            <select v-model="filters.make" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+            <select v-model="filters.make" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
               <option value="">All Makes</option>
               <option v-for="make in carMakes" :key="make" :value="make">{{ make }}</option>
             </select>
@@ -45,7 +32,7 @@
           <!-- Year -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
-            <select v-model="filters.year" class="w-full border text-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-red-200">
+            <select v-model="filters.year" class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
               <option value="">All Years</option>
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
@@ -55,28 +42,24 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Price Range (₱)</label>
             <div class="flex items-center gap-2 mb-2">
-              <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
+              <input v-model.number="filters.minPrice" type="number" placeholder="Min" class="w-full border rounded-lg px-4 py-3 text-sm">
               <span class="text-gray-400">—</span>
-              <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full text-black border rounded-lg px-3 py-2 text-sm">
+              <input v-model.number="filters.maxPrice" type="number" placeholder="Max" class="w-full border rounded-lg px-4 py-3 text-sm">
             </div>
-            <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full">
+            <input type="range" v-model.number="filters.maxPrice" :max="maxPossiblePrice" step="100000" class="w-full h-2 rounded-lg">
             <div class="text-xs text-gray-500 mt-1 text-right">Up to ₱{{ filters.maxPrice?.toLocaleString() || '10M' }}</div>
           </div>
 
           <!-- Transmission -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Transmission</label>
-            <div class="flex gap-3">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Transmission</label>
+            <div class="grid grid-cols-2 gap-3">
               <button @click="filters.transmission = 'automatic'"
-                :class="filters.transmission === 'automatic' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
-                class="flex-1 py-2 py-2 rounded-lg border hover:bg-red-600 hover:text-white transition">
-                Automatic
-              </button>
+                :class="filters.transmission === 'automatic' ? 'bg-red-600 text-white' : 'bg-gray-100'"
+                class="py-3 rounded-lg font-medium hover:bg-red-600 hover:text-white transition">Automatic</button>
               <button @click="filters.transmission = 'manual'"
-                :class="filters.transmission === 'manual' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'"
-                class="flex-1 py-2 rounded-lg border hover:bg-red-600 hover:text-white transition">
-                Manual
-              </button>
+                :class="filters.transmission === 'manual' ? 'bg-red-600 text-white' : 'bg-gray-100'"
+                class="py-3 rounded-lg font-medium hover:bg-red-600 hover:text-white transition">Manual</button>
             </div>
           </div>
 
@@ -85,8 +68,8 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Fuel Type</label>
             <div class="grid grid-cols-2 gap-3">
               <label v-for="fuel in fuelTypes" :key="fuel" class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" v-model="filters.fuelTypes" :value="fuel" class="w-4 h-4 text-red-600 rounded focus:ring-red-500">
-                <span class="text-sm text-black">{{ fuel }}</span>
+                <input type="checkbox" v-model="filters.fuelTypes" :value="fuel" class="w-5 h-5 text-red-600 rounded">
+                <span class="text-sm">{{ fuel }}</span>
               </label>
             </div>
           </div>
@@ -94,113 +77,97 @@
           <!-- Search -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full text-black border px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-200 outline-none">
+            <input v-model="search" type="text" placeholder="Make, model, year..." class="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-200 outline-none">
           </div>
 
           <!-- Buttons -->
-          <div class="flex gap-3">
-            <button @click="resetFilters" class="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300 transition">
-              Reset
-            </button>
-            <button @click="fetchCars" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition">
-              Apply Filters
-            </button>
+          <div class="flex gap-3 pt-6">
+            <button @click="resetFilters" class="flex-1 bg-gray-200 py-3 rounded-lg font-bold hover:bg-gray-300 transition">Reset</button>
+            <button @click="fetchCars" class="flex-1 bg-red-600 text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">Apply Filters</button>
           </div>
         </div>
       </aside>
-      <!-- Car Listings -->
-      <main class="flex-1 overflow-y-auto pb-10 md:pb-0 px-6 md:px-8 pt-6">
-        <h1 class="text-3xl font-semibold text-gray-800 mb-6 sticky top-0 bg-gray-50 py-4 -mx-6 md:-mx-8 px-8 px-6 md:px-8 z-30 border-b">Available Cars ({{ totalCars }})</h1>
 
-        <div v-if="cars.length" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="car in cars" :key="car.id" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 group relative">
+      <!-- MAIN CONTENT: CARS ONLY (Scrollable) -->
+      <main class="flex-1 md:ml-80 lg:ml-96 overflow-y-auto bg-gray-50">
+        <div class="px-6 md:px-8 pt-6 pb-24">
 
-            <!-- Compare Checkbox -->
-            <label class="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur px-4 py-2 rounded-full shadow-lg flex items-center gap-2 cursor-pointer border border-gray-200 hover:border-red-400 transition">
-              <input type="checkbox" :value="car.id" v-model="compareIds"
-                class="w-5 h-5 text-red-600 rounded focus:ring-red-500"
-                :disabled="!compareIds.includes(car.id) && compareIds.length >= 2">
-              <span class="font-bold text-sm" :class="compareIds.includes(car.id) ? 'text-red-600' : 'text-gray-600'">
-                {{ compareIds.includes(car.id) ? 'Added' : 'Compare' }}
-              </span>
-            </label>
+          <!-- Mobile Filters Toggle -->
+          <div class="md:hidden flex justify-between items-center mb-6 sticky top-0 bg-gray-50 z-40 py-4 border-b">
+            <h1 class="text-2xl font-bold text-gray-800">Available Cars ({{ totalCars }})</h1>
+            <button @click="showMobileFilters = !showMobileFilters"
+                    class="px-5 py-3 bg-white rounded-xl shadow-lg flex items-center gap-2 font-medium">
+              <i class="fas fa-sliders-h"></i> Filters
+            </button>
+          </div>
 
-            <!-- Car Image -->
-            <div class="relative bg-gray-200 h-52 overflow-hidden">
-              <img 
-                :src="getCarImage(car.main_image)"
-                :alt="car.make + ' ' + car.model"
-                class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                loading="lazy"
-                @error="e => e.target.src = '/default-car.jpg'"
-              />
-            </div>
+          <!-- Desktop Title -->
+          <h1 class="hidden md:block text-3xl font-bold text-gray-800 mb-8">Available Cars ({{ totalCars }})</h1>
 
-            <div class="p-5">
-              <h2 class="text-xl font-bold text-gray-800">{{ car.make }} {{ car.model }}</h2>
-              <p class="text-sm text-gray-500">{{ car.variant || '' }} • {{ car.year }}</p>
-              <p class="mt-2 text-gray-600 text-sm line-clamp-2">{{ car.description }}</p>
-
-              <div class="mt-4 flex items-center justify-between">
-                <p class="text-2xl font-bold text-red-600">₱{{ Number(car.price).toLocaleString() }}</p>
-                <span class="px-3 py-1 text-xs rounded-full font-medium"
-                      :class="car.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
-                  {{ car.status }}
+          <!-- Car Grid -->
+          <div v-if="cars.length" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="car in cars" :key="car.id" class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 group relative">
+              <!-- Compare Checkbox -->
+              <label class="absolute top-4 right-4 z-10 bg-white/95 backdrop-blur px-4 py-2 rounded-full shadow-lg flex items-center gap-2 cursor-pointer border border-gray-200 hover:border-red-400 transition">
+                <input type="checkbox" :value="car.id" v-model="compareIds"
+                  class="w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  :disabled="!compareIds.includes(car.id) && compareIds.length >= 2">
+                <span class="font-bold text-sm" :class="compareIds.includes(car.id) ? 'text-red-600' : 'text-gray-600'">
+                  {{ compareIds.includes(car.id) ? 'Added' : 'Compare' }}
                 </span>
+              </label>
+
+              <div class="relative bg-gray-200 h-52 overflow-hidden">
+                <img :src="getCarImage(car.main_image)" :alt="car.make + ' ' + car.model"
+                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  loading="lazy" @error="e => e.target.src = '/default-car.jpg'" />
               </div>
 
-              <!-- SEE MORE BUTTON -->
-              <button @click="openDetailsModal(car)" 
-                      class="mt-4 w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white py-3 rounded-lg font-semibold hover:from-gray-900 hover:to-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                See More Details
-              </button>
-
-              <!-- Book Test Drive -->
-
-            <button 
-              @click="openModal(car.id)"
-              :disabled="!isCarAvailable(car)"
-              class="mt-2 w-full py-3 font-medium text-lg rounded-lg transition relative"
-              :class="isCarAvailable(car) 
-                ? 'bg-red-600 text-white hover:bg-red-700 cursor-pointer' 
-                : 'bg-gray-300 text-gray-600 cursor-not-allowed'">
-              
-              <span :class="{ 'opacity-0': !isCarAvailable(car) }">
-                Book Drive Test
-              </span>
-              
-              <span v-if="!isCarAvailable(car)" class="absolute inset-0 flex items-center justify-center text-sm font-medium">
-                {{ car.status === 'sold' ? 'Sold' : car.status === 'reserved' ? 'Reserved' : 'Not Available' }}
-              </span>
-            </button>
+              <div class="p-5">
+                <h2 class="text-xl font-bold text-gray-800">{{ car.make }} {{ car.model }}</h2>
+                <p class="text-sm text-gray-500">{{ car.variant || '' }} • {{ car.year }}</p>
+                <p class="mt-2 text-gray-600 text-sm line-clamp-2">{{ car.description }}</p>
+                <div class="mt-4 flex items-center justify-between">
+                  <p class="text-2xl font-bold text-red-600">₱{{ Number(car.price).toLocaleString() }}</p>
+                  <span class="px-3 py-1 text-xs rounded-full font-medium"
+                    :class="car.status === 'available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                    {{ car.status }}
+                  </span>
+                </div>
+                <button @click="openDetailsModal(car)" 
+                        class="mt-4 w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white py-3 rounded-lg font-semibold hover:from-gray-900 hover:to-black transition-all shadow-lg">
+                  See More Details
+                </button>
+                <button @click="openModal(car.id)" :disabled="!isCarAvailable(car)"
+                  class="mt-2 w-full py-3 font-medium text-lg rounded-lg transition relative"
+                  :class="isCarAvailable(car) ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-300 text-gray-600 cursor-not-allowed'">
+                  <span :class="{ 'opacity-0': !isCarAvailable(car) }">Book Test Drive</span>
+                  <span v-if="!isCarAvailable(car)" class="absolute inset-0 flex items-center justify-center text-sm font-medium">
+                    {{ car.status === 'sold' ? 'Sold' : 'Reserved' }}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Empty State -->
-        <div v-else class="text-center py-20 text-gray-500">
-          <p class="text-xl font-medium">No cars found.</p>
-          <p class="mt-2">Try adjusting your filters.</p>
-        </div>
+          <!-- Empty & Pagination -->
+          <div v-else class="text-center py-20 text-gray-500">
+            <p class="text-xl font-medium">No cars found.</p>
+            <p class="mt-2">Try adjusting your filters.</p>
+          </div>
 
-        <!-- Pagination -->
-        <div v-if="pagination.total_pages > 1" class="flex justify-center items-center mt-12 gap-4">
-          <button @click="changePage(pagination.page - 1)" :disabled="pagination.page === 1"
-                  class="px-6 py-3 rounded-lg border disabled:opacity-50 hover:bg-gray-50 transition">
-            Previous
-          </button>
-          <span class="text-gray-700 font-medium">Page {{ pagination.page }} of {{ pagination.total_pages }}</span>
-          <button @click="changePage(pagination.page + 1)" :disabled="pagination.page === pagination.total_pages"
-                  class="px-6 py-3 rounded-lg border disabled:opacity-50 hover:bg-gray-50 transition">
-            Next
-          </button>
+          <div v-if="pagination.total_pages > 1" class="flex justify-center items-center mt-12 gap-4 pb-10">
+            <button @click="changePage(pagination.page - 1)" :disabled="pagination.page === 1"
+                    class="px-8 py-3 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition">Previous</button>
+            <span class="text-gray-700 font-medium">Page {{ pagination.page }} of {{ pagination.total_pages }}</span>
+            <button @click="changePage(pagination.page + 1)" :disabled="pagination.page === pagination.total_pages"
+                    class="px-8 py-3 rounded-lg border disabled:opacity-50 hover:bg-gray-100 transition">Next</button>
+          </div>
         </div>
       </main>
     </div>
 
     <!-- LUXURY CAR DETAILS MODAL -->
-     <!-- LUXURY & ELEGANT CAR DETAILS MODAL — PERFECT SIZE, SOBRANG CLASSY! -->
-    <!-- FULLSCREEN LIGHTBOX + HORIZONTAL GALLERY (BOTH IN ONE!) -->
     <teleport to="body">
       <!-- 1. DETAILS MODAL -->
       <div v-if="showDetailsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -605,6 +572,8 @@ select:focus option {
   transform: translateY(-5px);
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
 }
-
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 </style>
 
