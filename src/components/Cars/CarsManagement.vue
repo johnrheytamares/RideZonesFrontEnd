@@ -330,10 +330,12 @@
 import { ref, onMounted, computed } from 'vue'
 
 const loading = ref(false)
+const uploadingAdditional = ref(false)
 const cars = ref([])
 const isEditing = ref(false)
 const editId = ref(null)
 const previewImage = ref('')
+const additionalImages = ref([])
 const toast = ref({ show: false, message: '', type: 'success' })
 
 const currentUserInfo = ref({
@@ -441,6 +443,51 @@ const handleImageUpload = async (e) => {
   } finally {
     loading.value = false
   }
+}
+
+const handleMultipleUpload = async (e) => {
+  const files = Array.from(e.target.files).filter(f => ['image/jpeg','image/jpg','image/png'].includes(f.type) && f.size <= 2*1024*1024)
+  if (files.length === 0) return
+
+  uploadingAdditional.value = true
+  const user = JSON.parse(localStorage.getItem('rz_user') || '{}')
+
+  for (const file of files) {
+    const fd = new FormData()
+    fd.append('additional_image', file)  // importante ito sa backend
+
+    try {
+      const res = await fetch(`${API_BASE}/upload-car-image`, {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-User': JSON.stringify(user) }
+      })
+      const data = await res.json()
+      if (data.status === 'success' && data.url) {
+        additionalImages.value.push({
+          url: data.url,
+          is_primary: additionalImages.value.length === 0 && !form.value.main_image ? 1 : 0
+        })
+        showToast(`${file.name} uploaded!`)
+      }
+    } catch (err) {
+      showToast(`Failed: ${file.name}`, 'error')
+    }
+  }
+  uploadingAdditional.value = false
+  e.target.value = '' // clear input
+}
+
+const removeAdditionalImage = (index) => {
+  additionalImages.value.splice(index, 1)
+}
+
+const setAsPrimary = (index) => {
+  additionalImages.value.forEach(img, i => {
+    img.is_primary = i === index ? 1 : 0
+  }),
+  form.value.main_image = additionalImages.value[index].url,
+  previewImage.value = additionalImages.value[index].url
 }
 
 // CRUD OPERATIONS — LAHAT MAY DUPLICATE CHECK
@@ -573,12 +620,19 @@ const editCar = (car) => {
   editId.value = car.id
   form.value = { ...car }
   previewImage.value = getCarImage(car.main_image)
+
+  additionalImages.value = (car.images || []).map(img => ({
+    url: img.image_url || img.url,
+    is_primary: img.is_primary || 0
+  }))
+
   document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' })
 }
 
 const cancelEdit = () => {
   isEditing.value = false
   editId.value = null
+  additionalImages.value = []
   resetForm()
 }
 
@@ -589,14 +643,11 @@ const resetForm = () => {
     warranty_period: 36, warranty_start_date: '', warranty_end_date: '', service_history: ''
   }
   previewImage.value = ''
+  additionalImages.value = []
 }
 
 onMounted(() => {
   fetchCars()
-  // Comment out sa production!
-  // if (!localStorage.getItem('rz_user')) {
-  //   localStorage.setItem('rz_user', JSON.stringify({ id: 1, role: 'admin', dealer_id: 1 }))
-  // }
 })
 </script>
 
