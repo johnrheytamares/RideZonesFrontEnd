@@ -92,8 +92,8 @@
       <div class="user-profile">
         <div class="avatar"><i class="fas fa-user"></i></div>
         <div class="user-info">
-          <span class="user-name">{{ user?.name || 'Guest' }}</span>
-          <span class="user-role">{{ (user?.role || 'guest').toUpperCase() }}</span>
+          <span class="user-name">{{ user?.name}}</span>
+          <span class="user-role">{{ (user?.role).toUpperCase() }}</span>
         </div>
       </div>
       <button @click="logout" class="logout-btn" title="Logout">

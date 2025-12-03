@@ -102,7 +102,7 @@
           </div>
 
           <!-- Desktop Title -->
-          <h1 class="hidden md:block text-3xl font-bold text-gray-800 mb-8">Available Cars ({{ totalCars }})</h1>
+          <h1 class="hidden md:block text-3xl font-bold text-gray-800 mb-8">Featured Cars ({{ totalCars }})</h1>
 
           <!-- Car Grid -->
           <div v-if="cars.length" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

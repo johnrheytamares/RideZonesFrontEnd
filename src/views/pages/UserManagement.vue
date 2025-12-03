@@ -112,7 +112,7 @@
               <label class="text-xs text-gray-400 mb-2 block">Role *</label>
               <select v-model="form.role" required
                       class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:border-red-500 focus:outline-none transition">
-                <option class="text-black" value="buyer">Customer</option>
+                <!-- <option class="text-black" value="buyer">Customer</option> -->
                 <option class="text-black" value="dealer">Dealer</option>
                 <option class="text-black" value="admin">Administrator</option>
               </select>
@@ -165,7 +165,7 @@
                 <option class="text-black" value="">All Roles</option>
                 <option class="text-black"value="admin">Admin</option>
                 <option class="text-black" value="dealer">Dealer</option>
-                <option class="text-black" value="buyer">Customer</option>
+                <!-- <option class="text-black" value="buyer">Customer</option> -->
               </select>
               <button @click="fetchUsers" class="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition">
                 <i class="fas fa-sync-alt" :class="{ 'animate-spin': loading }"></i>

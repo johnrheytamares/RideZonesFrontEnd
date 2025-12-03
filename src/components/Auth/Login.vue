@@ -82,12 +82,10 @@
         </button>
       </form>
 
-
-
       <!-- Register Link -->
-      <div class="registration-section">
+      <!-- <div class="registration-section">
         <p>Don't have an account? <router-link to="/register" class="login-link">Sign Up</router-link></p>
-      </div>
+      </div> -->
 
       <!-- Messages -->
       <div class="error-message" v-if="errorMessage" @click="errorMessage = ''">
