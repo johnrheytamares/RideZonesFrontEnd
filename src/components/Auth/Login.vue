@@ -108,7 +108,7 @@
         <div class="feature-list">
           <div class="feature-item"><i class="fas fa-car"></i><span>Vehicle Management</span></div>
           <div class="feature-item"><i class="fas fa-calendar-alt"></i><span>Appointment Scheduling</span></div>
-          <div class="feature-item"><i class="fas fa-chart-line"></i><span>Sales Analytics</span></div>
+          <div class="feature-item"><i class="fas fa-user"></i><span>Multi-dealer Support</span></div>
         </div>
       </div>
     </div>
