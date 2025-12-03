@@ -331,6 +331,24 @@ const submitForm = async () => {
   errorMessage.value = ''
   loading.value = true
 
+  // Duplicate checks
+  const trimmedName = form.value.name.trim()
+  const trimmedEmail = form.value.email.trim().toLowerCase()
+
+  // Check for duplicate name (excluding self if editing)
+  if (users.value.some(u => u.name.toLowerCase() === trimmedName.toLowerCase() && (!isEditing.value || u.id !== editId.value))) {
+    errorMessage.value = 'Name already exists'
+    loading.value = false
+    return
+  }
+
+  // Check for duplicate email (only on create, since email is disabled on edit)
+  if (!isEditing.value && users.value.some(u => u.email.toLowerCase() === trimmedEmail)) {
+    errorMessage.value = 'Email already exists'
+    loading.value = false
+    return
+  }
+
   const url = isEditing.value 
     ? `${API_BASE}/update/${editId.value}` 
     : `${API_BASE}/create`
@@ -339,7 +357,7 @@ const submitForm = async () => {
 
   // Build payload
   const body = {
-    name: form.value.name.trim(),
+    name: trimmedName,
     email: form.value.email.trim(),
     role: form.value.role,
     phone: form.value.phone || null
